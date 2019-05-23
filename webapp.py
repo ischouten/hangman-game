@@ -6,7 +6,7 @@ from flask import Flask, session, redirect, url_for, escape, request, render_tem
 
 app = Flask(__name__)
 
-log = logquicky.create("hangman-log", level="DEBUG")
+log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
 # Set the secret key to some random bytes. Keep this really secret!
 app.secret_key = os.environ.get("SESSION_SECRET", "ShouldBeSecret")

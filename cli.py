@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-
+import os
 import logquicky
 from hangman.game import HangmanGame
 
-log = logquicky.create("hangman-log")
+log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
 game = HangmanGame()
 
