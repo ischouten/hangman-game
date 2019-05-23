@@ -19,11 +19,11 @@ game = HangmanGame(game_info=session)
 def load_ui():
     # Index page of the game.
 
-    log.debug(f"Testword: {session.get('solution')}")
+    log.debug(f"Solution: {session.get('solution')}")
     log.info(f"Guessed result: {session.get('guess_result')}")
 
     # TODO: Render nices GUI
-    return render_template("index.html")
+    return render_template("index.html", game_data=session)
 
 
 @app.route("/status", methods=["GET"])
