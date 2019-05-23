@@ -4,7 +4,7 @@ import logquicky
 
 log = logquicky.load("hangman-log")
 
-word_pool = ["testword"]
+word_pool = ["3dhubs", "marvin", "print", "filament", "order", "layer"]
 max_guesses = 5
 
 
@@ -12,20 +12,22 @@ class HangmanGame:
 
     """ Game of hangman """
 
-    def __init__(self):
+    def __init__(self, game_info=None):
         """ Instantiate a game """
 
-        self.solution = self.select_word()
-        self.finished = False
+        if game_info:
+            log.debug("Game info")
+            self.solution = game_info.get("solution")
+            self.guess_result = game_info.get("guess_result")
+        else:
+            self.solution = self.select_word()
+            self.guess_result = "".join("_" for i in range(len(self.solution)))
+            # To store wrongly guessed characters here.
+            self.guessed_chars = set()
+            log.info("Starting game...")
+            log.info(f"Start guessing what {self.guess_result} is.")
 
         # This will be the representation of the guessed solution so far.
-        self.guess_result = "".join("_" for i in range(len(self.solution)))
-
-        # Keep the guessed characters that were wrong here.
-        self.guessed_chars = set()
-
-        log.info("Starting game...")
-        log.info(f"Start guessing what {self.guess_result} is.")
 
     def attempts_remaining(self) -> int:
         # Checks set of invalidly guessed characters and returns max_guesses - length
@@ -34,8 +36,9 @@ class HangmanGame:
     def guess(self, character) -> bool:
         """ Make a guess for the solution.  """
 
-        if not bool(re.match(r"^[a-z]$", character)):
-            log.info("Please pick a valid character (a-z)")
+        log.debug(f"Incoming guesss for {self.solution}: {character}")
+        if not bool(re.match(r"^[a-z0-9]$", character)):
+            log.info("Please pick a valid character (a-z or 0-9)")
             return False
 
         # If the character is not in the solution, then it costs an attempt.
