@@ -2,11 +2,14 @@ import random
 import re
 import logquicky
 import time
+from hangman.datastore import DataStore
 
 log = logquicky.load("hangman-log")
 
 word_pool = ["3dhubs", "marvin", "print", "filament", "order", "layer"]
 max_guesses = 5
+
+ds = DataStore.get_instance()
 
 
 class HangmanGame:
@@ -76,6 +79,14 @@ class HangmanGame:
             # Score is calculated so that it is higher if you have finished in less attempts and time.
             time_taken = int(time.time()) - int(self.start_time)
             self.score = int(self.attempts_remaining() * 1000 / time_taken)
+
+            highscores = ds.load_highscores()
+            log.debug(highscores)
+            if len(highscores) < 5 or self.score > highscores[-1].get("score"):
+                # This is in the top 5 high scores so lets allow the player to save his score.
+                # TODO: This does not work with web app.
+                player_name = str(input("Player name?"))
+                ds.save_highscore(self.solution, self.score, player_name)
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
