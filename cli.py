@@ -11,4 +11,8 @@ while game.attempts_remaining() > 0 and not game.finished:
     character = input("Pick a character (a-z): ")
     game.guess(character)
 
+if game.is_highscore:
+    player_name = input("Type your name to register your score: ")
+    game.save_as_highscore(player_name)
+
 log.info(f"Game finished")

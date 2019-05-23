@@ -83,16 +83,24 @@ class HangmanGame:
             highscores = ds.load_highscores()
             log.debug(highscores)
             if len(highscores) < 5 or self.score > highscores[-1].get("score"):
-                # This is in the top 5 high scores so lets allow the player to save his score.
-                # TODO: This does not work with web app.
-                player_name = str(input("Player name?"))
-                ds.save_highscore(self.solution, self.score, player_name)
+                # Allows the game to be saved.
+                self.is_highscore = True
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
         else:
             log.info(f"So far, you discovered: {self.guess_result} and {self.attempts_remaining()} guesses left.")
 
+        return True
+
+    def save_as_highscore(self, player_name) -> bool:
+        """ Save this game as highscore."""
+
+        if not self.is_highscore:
+            # Only allowed to save highscore if the game has verified its eligible.
+            return False
+
+        ds.save_highscore(self.solution, self.score, player_name)
         return True
 
     def select_word(self) -> str:
@@ -102,9 +110,3 @@ class HangmanGame:
         word = word_pool[word_int - 1].lower()
 
         return word
-
-
-def get_highscores(self):
-
-    """ Returns the top 5 highscores from the database """
-    return ds.load_highscores()

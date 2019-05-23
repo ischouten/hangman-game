@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import os
 import logquicky
-from hangman.game import HangmanGame, load_highscores
+from hangman.game import HangmanGame
+from hangman.datastore import DataStore
+
 from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify
 
-
+ds = DataStore.get_instance()
 app = Flask(__name__)
 
 log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
@@ -37,7 +39,14 @@ def game_status():
     guessed_chars = ",".join(game.guessed_chars)
 
     return (
-        jsonify({"guess_result": session.get("guess_result"), "guessed_chars": guessed_chars}),
+        jsonify(
+            {
+                "guess_result": session.get("guess_result"),
+                "guessed_chars": guessed_chars,
+                "is_highscore": session.get("is_highscore", False),
+                "score": session.get("score", 0),
+            }
+        ),
         200,
         {"Content-Type": "application/json"},
     )
@@ -46,7 +55,7 @@ def game_status():
 @app.route("/highscores", methods=["GET"])
 def highscores():
     # Load top 5 high scores
-    highscores = load_highscores()
+    highscores = ds.load_highscores()
 
     return jsonify(highscores)
 
@@ -79,6 +88,9 @@ def guess_character(character):
     # Update session
     session["guess_result"] = game.guess_result
     session["guessed_chars"] = ",".join(game.guessed_chars)
+    session["is_highscore"] = game.is_highscore
+    session["score"] = game.score
+    session["finished"] = game.finished
 
     # TODO: Return game status
     return "", 200, {"Content-Type": "application/json"}
