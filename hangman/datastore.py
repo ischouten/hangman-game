@@ -34,7 +34,7 @@ class DataStore(object):
                 log.info(f"Loading existing database: {self.db_name}")
 
             try:
-                self.connection = sqlite3.connect(self.db_name)
+                self.connection = sqlite3.connect(self.db_name, check_same_thread=False)
             except sqlite3.OperationalError:
                 log.warning(f"Could not create or open a database in {self.db_name}")
 

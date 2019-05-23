@@ -102,3 +102,9 @@ class HangmanGame:
         word = word_pool[word_int - 1].lower()
 
         return word
+
+
+def get_highscores(self):
+
+    """ Returns the top 5 highscores from the database """
+    return ds.load_highscores()

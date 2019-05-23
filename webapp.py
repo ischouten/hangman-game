@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import os
 import logquicky
-from hangman.game import HangmanGame
+from hangman.game import HangmanGame, load_highscores
 from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify
+
 
 app = Flask(__name__)
 
@@ -22,7 +23,7 @@ def load_ui():
     log.debug(f"Solution: {session.get('solution')}")
     log.info(f"Guessed result: {session.get('guess_result')}")
 
-    # TODO: Render nices GUI
+    # TODO: Render nicer GUI
     return render_template("index.html", game_data=session)
 
 
@@ -40,6 +41,14 @@ def game_status():
         200,
         {"Content-Type": "application/json"},
     )
+
+
+@app.route("/highscores", methods=["GET"])
+def highscores():
+    # Load top 5 high scores
+    highscores = load_highscores()
+
+    return jsonify(highscores)
 
 
 @app.route("/new", methods=["POST"])
