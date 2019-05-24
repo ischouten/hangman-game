@@ -15,3 +15,4 @@ flask = "*"
 python_version = "3.7"
 
 [scripts]
+serve = "python webapp.py"

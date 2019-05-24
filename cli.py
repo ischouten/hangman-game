@@ -7,7 +7,8 @@ log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
 game = HangmanGame()
 
-while game.attempts_remaining() > 0 and not game.finished:
+while game.attempts_remaining() > 0 and game.status == "ACTIVE":
+    log.debug(game.status)
     character = input("Pick a character (a-z): ")
     game.guess(character)
 
