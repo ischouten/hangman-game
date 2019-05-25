@@ -2,8 +2,8 @@
   "name": "hangman-game",
   "version": "0.0.1",
   "engines": {
-    "node": "6.11.1",
-    "npm": "3.10.10"
+    "node": "11.11.0",
+    "yarn": "1.13.0"
   },
   "scripts": {
     "heroku-postbuild": "cd react-ui && yarn build"
