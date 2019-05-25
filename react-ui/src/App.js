@@ -2,19 +2,39 @@ import React from "react";
 import styled from "styled-components";
 
 const HangmanApp = styled.div`
+
+  display: flex
+  flex-direction: column;
+  justify-content: space-between;
+  align-content: center;
   min-width: 600px;
   width: 50vw;
   height: 70vh;
   transform: translateY(15%);
   margin: auto;
-  border: solid 1px #ff00ff;
+  border: solid 1px #cccccc;
+
+  div {
+    width: 90%;
+    border: solid 1px #999999;
+    margin: auto;
+    padding: 5px;
+    text-align: center;
+  }
+
 `;
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { guess_result: "?" };
+    this.state = {
+      game_hint: "Press spacebar to start"
+    };
+    // Add the eventListener to catch keyboard presses.
+    // Add a little bit of timeout to prevent triggering while loading document.
+
+    document.addEventListener("keyup", this.checkInput);
 
     if (process.env.NODE_ENV === "development") {
       this.base_url = "http://" + window.location.hostname + ":5000/";
@@ -23,38 +43,46 @@ export default class App extends React.Component {
     }
   }
 
-  checkInput = async (e) => {
-    const char = e.key;
-
-    const isValidInput = char.match(/[a-z0-9]/gi);
-    console.log(isValidInput);
-    if (isValidInput) {
-      const request = await fetch(this.base_url + "guess/" + char, {
-        method: "POST"
-      });
-
-      const json_response = await request.status;
-      this.updateStatus();
-      console.log(json_response);
-    } else {
-      console.log("invalid key");
-    }
-  };
-
+  // Start a new game
   startGame = async () => {
     console.log("Starting new game");
     await fetch(this.base_url + "new", { method: "POST" })
       .then((response) => response.json())
-      .then((message) => {
-        // If the game is in progress, then add the eventListener to catch keyboard presses.
-        document.addEventListener("keyup", this.checkInput);
-        console.log(message.status);
-      })
-      .then(() => this.updateStatus());
+      .then((json) => {
+        // Update state so that the UI updates.
+        this.setState(json);
+      });
   };
 
-  updateStatus = async () => {
-    // Function loads the game status
+  // Make a guess by capturing keyboard input
+  checkInput = async (e) => {
+    const char = e.key;
+
+    if (char.match(/[ ]/gi)) {
+      this.startGame();
+      return;
+    }
+
+    if (this.state.status !== "ACTIVE") {
+      return;
+    }
+
+    const isValidInput = char.match(/[a-z0-9]/gi);
+    if (isValidInput) {
+      await fetch(this.base_url + "guess/" + char, {
+        method: "POST"
+      })
+        .then((response) => response.json())
+        .then((json) => this.setState(json));
+    } else {
+      this.setState({ game_hint: "Press key a-z or 0-9" });
+      console.log("invalid key", char);
+    }
+    console.log("Current game state:", this.state);
+  };
+
+  // Call game status
+  checkStatus = async () => {
     console.log("Loading status data");
     await fetch(this.base_url + "status", {
       headers: {
@@ -63,9 +91,9 @@ export default class App extends React.Component {
       }
     })
       .then((response) => response.json())
-      .then((message) => {
-        console.log(message.guess_result);
-        this.setState({ guess_result: message.guess_result });
+      .then((json) => {
+        console.log("Json data ", json);
+        this.setState(json);
       });
   };
 
@@ -74,10 +102,30 @@ export default class App extends React.Component {
   };
 
   render() {
+    const guesses_left = this.state.guessed_chars
+      ? 5 - this.state.guessed_chars.length
+      : 5;
+
     return (
       <HangmanApp>
         <div>Result: {this.state.guess_result}</div>
-        <div onClick={this.startGame}>New game</div>
+        <div>{this.state.game_hint}</div>
+        <div>
+          <p>Tried characters:</p>
+          <p>{this.state.guessed_chars}</p>
+        </div>
+        <div>
+          <p>Game status:</p>
+          <p>{this.state.status}</p>
+        </div>
+
+        {(this.state.status === "FINISHED" ||
+          this.state.status === "HIGHSCORE") && (
+          <div>Game score: {this.state.score}</div>
+        )}
+
+        <div>Guesses left: {guesses_left}</div>
+        {/* <div onClick={this.startGame}>New game</div> */}
       </HangmanApp>
     );
   }
