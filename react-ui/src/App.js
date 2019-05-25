@@ -2,11 +2,16 @@ import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
-const base_url = "http://" + window.location.hostname + ":5000/";
-
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+
+    console.log(process.env.NODE_ENV);
+    if (process.env.NODE_ENV === "development") {
+      this.base_url = "http://" + window.location.hostname + ":5000/";
+    } else {
+      this.base_url = "/";
+    }
   }
 
   checkInput = async (e) => {
@@ -15,7 +20,7 @@ export default class App extends React.Component {
     const isValidInput = char.match(/[a-z0-9]/gi);
     console.log(isValidInput);
     if (isValidInput) {
-      const request = await fetch(base_url + "guess/" + char, {
+      const request = await fetch(this.base_url + "guess/" + char, {
         method: "POST"
       });
 
@@ -29,7 +34,7 @@ export default class App extends React.Component {
 
   startGame = async () => {
     console.log("Starting new game");
-    await fetch(base_url + "new", { method: "POST" })
+    await fetch(this.base_url + "new", { method: "POST" })
       .then((response) => response.json())
       .then((message) => {
         document.addEventListener("keyup", this.checkInput);
@@ -43,7 +48,7 @@ export default class App extends React.Component {
   updateStatus = async () => {
     // Function loads the game status
     console.log("Loading status data");
-    await fetch(base_url + "status", {
+    await fetch(this.base_url + "status", {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json"
