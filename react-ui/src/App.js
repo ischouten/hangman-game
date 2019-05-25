@@ -1,12 +1,21 @@
 import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import styled from "styled-components";
+
+const HangmanApp = styled.div`
+  min-width: 600px;
+  width: 50vw;
+  height: 70vh;
+  transform: translateY(15%);
+  margin: auto;
+  border: solid 1px #ff00ff;
+`;
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
 
-    console.log(process.env.NODE_ENV);
+    this.state = { guess_result: "?" };
+
     if (process.env.NODE_ENV === "development") {
       this.base_url = "http://" + window.location.hostname + ":5000/";
     } else {
@@ -37,12 +46,11 @@ export default class App extends React.Component {
     await fetch(this.base_url + "new", { method: "POST" })
       .then((response) => response.json())
       .then((message) => {
+        // If the game is in progress, then add the eventListener to catch keyboard presses.
         document.addEventListener("keyup", this.checkInput);
         console.log(message.status);
       })
       .then(() => this.updateStatus());
-
-    // If the game is in progress, then add the eventListener to catch keyboard presses.
   };
 
   updateStatus = async () => {
@@ -55,15 +63,10 @@ export default class App extends React.Component {
       }
     })
       .then((response) => response.json())
-      .then((message) => console.log(message));
-
-    // gameStatus.innerHTML = json_response.game_status;
-    // console.log("game status", json_response.status);
-    // guessResult.innerHTML = json_response.guess_result;
-    // guessedChars.innerHTML = json_response.guessed_chars.split("");
-    // attempts.innerHTML = json_response.guessed_chars.length;
-
-    // console.log("Response:", json_response.guess_result);
+      .then((message) => {
+        console.log(message.guess_result);
+        this.setState({ guess_result: message.guess_result });
+      });
   };
 
   finishGame = async () => {
@@ -72,21 +75,10 @@ export default class App extends React.Component {
 
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>Check</p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <div onClick={this.startGame}>StartGame</div>
-        </header>
-      </div>
+      <HangmanApp>
+        <div>Result: {this.state.guess_result}</div>
+        <div onClick={this.startGame}>New game</div>
+      </HangmanApp>
     );
   }
 }
