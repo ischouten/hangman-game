@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "create-react-app": "^3.0.1"
+  "name": "hangman-game",
+  "version": "0.0.1",
+  "engines": {
+  "node": "6.11.1",
+  "npm": "3.10.10"
+  },
+  "scripts": {
+  "start": "node static/bin/server.js",
+  "heroku-postbuild": "cd react-ui && npm install && npm run build:production"
+   }
   }
-}
