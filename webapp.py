@@ -7,7 +7,7 @@ from hangman.datastore import DataStore
 from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify
 
 ds = DataStore.get_instance()
-app = Flask(__name__)
+app = Flask(__name__, static_folder="react-ui/build/static", template_folder="react-ui/build")
 
 log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
@@ -25,7 +25,7 @@ def load_ui():
     log.info(f"Guessed result: {session.get('guess_result')}")
 
     # TODO: Render nicer GUI
-    return render_template("hangman.html")
+    return render_template("index.html")
 
 
 @app.route("/status", methods=["GET"])
