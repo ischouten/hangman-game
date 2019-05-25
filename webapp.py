@@ -24,42 +24,34 @@ app.secret_key = os.environ.get("SESSION_SECRET", "ShouldBeSecret")
 
 # The game info is stored in session object.
 
+game = HangmanGame()
+
 
 @app.route("/", methods=["GET"])
 def load_ui():
     # Index page of the game.
-
-    log.debug(f"Solution: {session.get('solution')}")
-    log.info(f"Guessed result: {session.get('guess_result')}")
-
-    # TODO: Render nicer GUI
     return render_template("index.html")
+
+
+@app.route("/new", methods=["POST"])
+def create_game():
+    """ Start a new game """
+
+    # Make sure session is clean.
+    global game
+    game.start()
+    session.clear()
+
+    # Store info from this game into sessino object.
+    write_game_state_to_session()
+
+    return (serialize_status(), 200, {"Content-Type": "application/json"})
 
 
 @app.route("/status", methods=["GET"])
 def game_status():
     # Index page of the game.
-    game = HangmanGame(game_info=session)
-
-    log.debug(f"Testword: {session.get('solution')}")
-    log.info(f"Guessed result: {session.get('guess_result')}")
-
-    guessed_chars = "".join(game.guessed_chars)
-
-    return (
-        jsonify(
-            {
-                "status": session.get("status"),
-                "guess_result": session.get("guess_result"),
-                "guessed_chars": guessed_chars,
-                "is_highscore": session.get("is_highscore", False),
-                "score": session.get("score", 0),
-                "start_time": session.get("start_time"),
-            }
-        ),
-        200,
-        {"Content-Type": "application/json"},
-    )
+    return (serialize_status(), 200, {"Content-Type": "application/json"})
 
 
 @app.route("/highscores", methods=["GET"])
@@ -70,44 +62,44 @@ def highscores():
     return jsonify(highscores)
 
 
-@app.route("/new", methods=["POST"])
-def create_game():
-    """ Start a new game """
-    # Make sure session is clean.
-    session.clear()
-    game = HangmanGame(game_info=session)
-
-    # Store info from this game into sessino object.
-
-    session["guess_result"] = game.guess_result
-    session["solution"] = game.solution
-    session["guessed_chars"] = ""
-    session["start_time"] = game.start_time
-
-    # TODO: Return game status
-    return (jsonify({"status": session.get("status")})), 200, {"Content-Type": "application/json"}
-
-
 @app.route("/guess/<string:character>", methods=["POST"])
 def guess_character(character):
     """ Make a guess for a character """
 
-    game = HangmanGame(game_info=session)
-
     # Whatever the length is, pick the first character as the guess for now.
     character = str(character)
-    log.debug(f"Guess character {character}")
     game.guess(character)
 
     # Update session
-    session["game_status"] = game.status
+    write_game_state_to_session()
+
+    return serialize_status(), 200, {"Content-Type": "application/json"}
+
+
+def write_game_state_to_session():
+
+    log.debug("Updating session information")
+    session["status"] = game.status
     session["guess_result"] = game.guess_result
     session["guessed_chars"] = "".join(game.guessed_chars)
-    session["is_highscore"] = game.is_highscore
     session["score"] = game.score
+    session["start_time"] = game.start_time
+    session["game_hint"] = game.game_hint
 
-    # TODO: Return game status
-    return "", 200, {"Content-Type": "application/json"}
+
+def serialize_status():
+    status = jsonify(
+        {
+            "status": session.get("status"),
+            "guess_result": session.get("guess_result"),
+            "guessed_chars": session.get("guessed_chars"),
+            "score": session.get("score", 0),
+            "start_time": session.get("start_time"),
+            "game_hint": session.get("game_hint"),
+        }
+    )
+
+    return status
 
 
 if __name__ == "__main__":
