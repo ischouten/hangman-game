@@ -8,7 +8,13 @@ from flask_cors import CORS
 from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify
 
 ds = DataStore.get_instance()
-app = Flask(__name__, static_folder="react-ui/build/static", template_folder="react-ui/build")
+
+serve_dir = "react-ui/build"
+if os.environ.get("PRODUCTION"):
+    serve_dir = "react-ui/dist"
+
+app = Flask(__name__, static_folder=f"{serve_dir}/static", template_folder=f"{serve_dir}")
+
 
 # Allow cors for now in development to let frontend talk from development dir
 CORS(app)
