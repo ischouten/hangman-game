@@ -3,11 +3,15 @@ import os
 import logquicky
 from hangman.game import HangmanGame
 from hangman.datastore import DataStore
+from flask_cors import CORS
 
 from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify
 
 ds = DataStore.get_instance()
-app = Flask(__name__)
+app = Flask(__name__, static_folder="react-ui/build/static", template_folder="react-ui/build")
+
+# Allow cors for now in development to let frontend talk from development dir
+CORS(app)
 
 log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
@@ -25,7 +29,7 @@ def load_ui():
     log.info(f"Guessed result: {session.get('guess_result')}")
 
     # TODO: Render nicer GUI
-    return render_template("hangman.html")
+    return render_template("index.html")
 
 
 @app.route("/status", methods=["GET"])
@@ -77,7 +81,7 @@ def create_game():
     session["start_time"] = game.start_time
 
     # TODO: Return game status
-    return "", 200, {"Content-Type": "application/json"}
+    return (jsonify({"status": session.get("status")})), 200, {"Content-Type": "application/json"}
 
 
 @app.route("/guess/<string:character>", methods=["POST"])

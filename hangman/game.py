@@ -31,11 +31,12 @@ class HangmanGame:
             self.score = game_info.get("score", 0)
             self.is_highscore = game_info.get("is_highscore")
         else:
+            # New game
             log.info("Starting new game...")
             self.solution = self.select_word()
             log.debug(f"Solution: {self.solution}")
             self.guess_result = "".join("_" for i in range(len(self.solution)))
-
+            self.score = 0
             self.is_highscore = False
             self.status = "ACTIVE"
             # Keep time so we can use the game duration for calculating the high score.
