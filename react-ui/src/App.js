@@ -37,12 +37,11 @@ export default class App extends React.Component {
     this.state = {
       game_hint: "Press spacebar to start new game",
       showScores: false,
-      registerHighscore: false,
+      showRegisterScore: false,
       player_name: ""
     };
 
     // Add the eventListener to catch keyboard presses.
-    // Add a little bit of timeout to prevent triggering while loading document.
     document.addEventListener("keyup", this.checkInput);
 
     if (process.env.NODE_ENV === "development") {
@@ -93,8 +92,12 @@ export default class App extends React.Component {
         this.setState({
           highscores: json,
           showScores: true,
-          postHighscore: false
+          postHighscore: false,
+          showRegisterScore: false
         });
+
+        // Re-enable the event listener for accepting space bar for new game.
+        document.addEventListener("keyup", this.checkInput);
       });
   };
 
@@ -129,7 +132,9 @@ export default class App extends React.Component {
             this.setState({ showScores: true });
             console.log(this.state);
           } else if (json.status === "HIGHSCORE") {
-            this.setState({ registerHighscore: true });
+            // Clear event listener so that the score can be inputted..
+            document.removeEventListener("keyup", this.checkInput);
+            this.setState({ showRegisterScore: true });
           }
         });
     } else {
@@ -138,15 +143,29 @@ export default class App extends React.Component {
     }
   };
 
+  //Call game status
+  loadStatus = async () => {
+    console.log("Loading status data");
+    await fetch(this.base_url + "status", {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      }
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        console.log("Json data ", json);
+        this.setState(json);
+      });
+  };
+
   componentWillMount = () => {
+    this.loadStatus();
     this.loadHighscores();
   };
 
-  finishGame = async () => {
-    document.removeEventListener("keyup", this.checkInput);
-  };
-
-  handleChange = (e) => {
+  handlePlayerNameChange = (e) => {
+    console.log("Key", e.key);
     if (e.key === "Enter") {
       this.postHighscore();
     }
@@ -175,26 +194,30 @@ export default class App extends React.Component {
           </div>
         )}
 
-        {this.state.status === "GAME_OVER" && <div>Game over :(</div>}
+        {this.state.status === "GAME_OVER" && (
+          <div>
+            <p>Game over</p>
+            <h1>:(</h1>
+          </div>
+        )}
 
         {this.state.showScores && (
           <ScoreBoard highscores={this.state.highscores} />
         )}
 
-        {this.state.status === "HIGHSCORE" && (
+        {this.state.showRegisterScore && (
           <div>
-            <h2>Highscore!</h2>
+            <h2>New highscore!</h2>
             <div>Score: {this.state.score}</div>
             <input
               id="playerName"
               type="text"
               value={this.state.player_name}
-              onChange={this.handleChange}
+              onChange={this.handlePlayerNameChange}
+              autoFocus
               placeholder="Enter your name"
             />
-            <button type="button" onClick={this.postHighscore}>
-              Save
-            </button>
+            <button onClick={this.postHighscore}>Send</button>
           </div>
         )}
 

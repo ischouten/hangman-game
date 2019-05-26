@@ -51,6 +51,7 @@ def create_game():
 @app.route("/status", methods=["GET"])
 def game_status():
     # Index page of the game.
+    write_game_state_to_session()
     return (serialize_status(), 200, {"Content-Type": "application/json"})
 
 
@@ -101,7 +102,6 @@ def write_game_state_to_session():
     session["score"] = game.score
     session["start_time"] = game.start_time
     session["game_hint"] = game.game_hint
-    session["highscores"] = game.highscores
 
 
 def serialize_status():

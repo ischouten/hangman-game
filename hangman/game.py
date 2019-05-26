@@ -20,7 +20,7 @@ class HangmanGame:
         """ Instantiate a game """
 
         # Game status info
-        self.status: str = "ACTIVE"
+        self.status: str = "UNSTARTED"
         self.solution: str = ""
         self.guess_result: str = ""
         self.guessed_chars = set()
@@ -31,7 +31,7 @@ class HangmanGame:
         self.start_time = 0
         self.is_highscore: bool = False
 
-        self.game_hint = ""
+        self.game_hint = "Press spacebar to start game"
 
     def start(self):
         # New game
@@ -63,6 +63,7 @@ class HangmanGame:
             self.calculate_score()
 
             self.status = "FINISHED"
+            self.game_hint = f"Congratulations! Your score: {self.score}.\nPress space to play again."
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
@@ -71,6 +72,7 @@ class HangmanGame:
             if len(highscores) < 5 or self.score > highscores[-1].get("score"):
                 # Allows the game to be saved.
                 self.status = "HIGHSCORE"
+                self.game_hint = "Congratulations. Top 5 score!"
 
         if len(self.guessed_chars) >= max_guesses:
             self.status = "GAME_OVER"
