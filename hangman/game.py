@@ -3,6 +3,7 @@ import re
 import logquicky
 import time
 from hangman.datastore import DataStore
+from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify, url_for
 
 log = logquicky.load("hangman-log")
 
@@ -16,24 +17,30 @@ class HangmanGame:
 
     """ Game of hangman """
 
-    def __init__(self, game_info=None):
+    def __init__(self, game_state={}):
         """ Instantiate a game """
 
-        # Game status info
-        self.status: str = "UNSTARTED"
-        self.solution: str = ""
-        self.guess_result: str = ""
-        self.guessed_chars = set()
+        # game_state is the dict
 
-        self.score: int = 0
+        # Game status info
+        self.status: str = game_state.get("status", "UNSTARTED")
+        self.solution: str = game_state.get("solution", "")
+        self.guess_result: str = game_state.get("guess_result", "")
+        self.guessed_chars: set = game_state.get("guessed_chars", {})
+
+        self.score = game_state.get("score", 0)
 
         # Variables used for calculating highscore
-        self.start_time = 0
-        self.is_highscore: bool = False
+        self.start_time = game_state.get("start_time", 0)
 
-        self.game_hint = "Press spacebar to start game"
+        self.game_hint = game_state.get("game_hint", "Press spacebar to start game")
 
-    def start(self):
+    def as_dict(self):
+        game = self.__dict__
+        game["guessed_chars"] = "".join(self.guessed_chars)
+        return game
+
+    def start(self) -> bool:
         # New game
         self.game_hint = "Press key to make a guess..."
         self.status = "ACTIVE"
@@ -42,17 +49,7 @@ class HangmanGame:
         self.guessed_chars = set()
         self.score = 0
         self.start_time = int(time.time())
-
-    def update_game(self, game_info):
-
-        log.debug("Updating game info")
-        # Update existing game
-        self.solution = game_info.get("solution")
-        self.guess_result = game_info.get("guess_result")
-        self.guessed_chars = {char for char in game_info.get("guessed_chars", {})}
-        self.start_time = game_info.get("start_time")
-        self.status = game_info.get("status")
-        self.score = game_info.get("score", 0)
+        return True
 
     def check_status(self) -> str:
 
@@ -116,6 +113,8 @@ class HangmanGame:
 
         # If the character is not in the solution, then it costs an attempt.
         if not character.lower() in self.solution:
+
+            self.guessed_chars = {char for char in self.guessed_chars}
             self.guessed_chars.add(character)
             self.game_hint = f"Nope... that's not right."
 
@@ -124,6 +123,8 @@ class HangmanGame:
 
             self.game_hint = f"Nice!"
             # Convert the string to a list so the characters become mutable.
+
+            log.debug(f"Guess result {self.guess_result}")
             character_list = list(self.guess_result)
 
             # Update the character_list by 'uncovering' the character at the matching positions.

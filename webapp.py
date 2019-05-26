@@ -22,10 +22,6 @@ log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 # Set the secret key to some random bytes. Keep this really secret!
 app.secret_key = os.environ.get("SESSION_SECRET", "ShouldBeSecret")
 
-# The game info is stored in session object.
-
-game = HangmanGame()
-
 
 @app.route("/", methods=["GET"])
 def load_ui():
@@ -35,47 +31,30 @@ def load_ui():
 
 @app.route("/new", methods=["POST"])
 def create_game():
+
     """ Start a new game """
 
     # Make sure session is clean.
-    global game
-    game.start()
     session.clear()
+    game = HangmanGame()
+    game.start()
+    session["game"] = game.as_dict()
 
-    # Store info from this game into sessino object.
-    write_game_state_to_session()
+    log.debug(f"Game info: {game.as_dict()}")
 
-    return (serialize_status(), 200, {"Content-Type": "application/json"})
+    return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
 
 
 @app.route("/status", methods=["GET"])
 def game_status():
-    # Index page of the game.
-    write_game_state_to_session()
-    return (serialize_status(), 200, {"Content-Type": "application/json"})
+    """ Read game status """
 
+    write_game_state_to_session(game)
+    game_state = session.get("game")
 
-@app.route("/highscores", methods=["GET"])
-def highscores():
-    """ Load top 5 high scores """
-    highscores = ds.load_highscores()
+    game = HangmanGame(game_state)
 
-    return jsonify(highscores)
-
-
-@app.route("/highscore", methods=["POST"])
-def post_highscore():
-    """ Save highscore to database. """
-
-    player_name = str(request.json.get("player_name"))
-
-    if game.status != "HIGHSCORE":
-        return jsonify({"msg": "Sorry... this is no highscore."}), 401, {"Content-Type": "application/json"}
-    game.save_as_highscore(player_name)
-
-    # Respond with the new list of highscores.
-    highscores = ds.load_highscores()
-    return jsonify(highscores)
+    return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
 
 
 @app.route("/guess/<string:character>", methods=["POST"])
@@ -85,38 +64,45 @@ def guess_character(character):
     # Whatever the length is, pick the first character as the guess for now.
     character = str(character)
 
+    log.debug(f"game: {session.get('game')}")
+    game_state = session.get("game")
+    game = HangmanGame(game_state)
     game.guess(character)
 
     # Update session
-    write_game_state_to_session()
+    write_game_state_to_session(game)
 
-    return serialize_status(), 200, {"Content-Type": "application/json"}
+    return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
 
 
-def write_game_state_to_session():
+@app.route("/highscores", methods=["GET"])
+def highscores():
+    """ Load top 5 high scores """
+    highscores = ds.load_highscores()
+    log.debug(highscores)
+    return jsonify(highscores)
+
+
+@app.route("/highscore", methods=["POST"])
+def post_highscore():
+    """ Save highscore to database. """
+
+    player_name = str(request.json.get("player_name"))
+
+    if session.get("game").status != "HIGHSCORE":
+        return jsonify({"msg": "Sorry... this is no highscore."}), 401, {"Content-Type": "application/json"}
+    session.get("game").save_as_highscore(player_name)
+
+    # Respond with the new list of highscores.
+    highscores = ds.load_highscores()
+    return jsonify(highscores)
+
+
+def write_game_state_to_session(game):
 
     log.debug("Updating session information")
-    session["status"] = game.status
-    session["guess_result"] = game.guess_result
-    session["guessed_chars"] = "".join(game.guessed_chars)
-    session["score"] = game.score
-    session["start_time"] = game.start_time
-    session["game_hint"] = game.game_hint
 
-
-def serialize_status():
-    status = jsonify(
-        {
-            "status": session.get("status"),
-            "guess_result": session.get("guess_result"),
-            "guessed_chars": session.get("guessed_chars"),
-            "score": session.get("score", 0),
-            "start_time": session.get("start_time"),
-            "game_hint": session.get("game_hint"),
-        }
-    )
-
-    return status
+    session["game"] = game.as_dict()
 
 
 if __name__ == "__main__":
