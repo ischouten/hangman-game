@@ -1,6 +1,10 @@
 import React from "react";
 import styled from "styled-components";
 import ScoreBoard from "./components/scoreboard";
+import Gallow1 from "./static/1.png";
+import Gallow2 from "./static/2.png";
+import Gallow3 from "./static/3.png";
+import Gallow4 from "./static/4.png";
 
 const HangmanApp = styled.div`
   display: absolute;
@@ -30,6 +34,11 @@ const GameHint = styled.div`
   bottom: 5%;
   margin: auto;
   width: 100%;
+`;
+
+const Gallow = styled.img`
+  max-width: 50%;
+  height: auto;
 `;
 
 const Header = styled.h1`
@@ -191,6 +200,19 @@ export default class App extends React.Component {
       ? 5 - this.state.guessed_chars.length
       : 5;
 
+    const GallowImage = () => {
+      if (this.state.guessed_chars.length == 1) {
+        return <Gallow src={Gallow1} alt="Gallow" />;
+      } else if (this.state.guessed_chars.length == 2) {
+        return <Gallow src={Gallow2} alt="Gallow" />;
+      } else if (this.state.guessed_chars.length == 3) {
+        return <Gallow src={Gallow3} alt="Gallow" />;
+      } else if (this.state.guessed_chars.length == 4) {
+        return <Gallow src={Gallow4} alt="Gallow" />;
+      }
+      return null;
+    };
+
     return (
       <HangmanApp>
         <Header>Hangman</Header>
@@ -198,6 +220,7 @@ export default class App extends React.Component {
           this.state.status === "PENDING") && (
           <div>
             <h1>{this.state.guess_result}</h1>
+            <GallowImage />
             <div>Guesses left: {guesses_left}</div>
             <div>
               <p>Tried characters:</p>
