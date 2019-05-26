@@ -104,6 +104,7 @@ export default class App extends React.Component {
   // Make a guess by capturing keyboard input
   checkInput = async (e) => {
     const char = e.key;
+    console.log(char);
 
     if (char.match(/[ ]/gi)) {
       this.startGame();
@@ -111,6 +112,12 @@ export default class App extends React.Component {
     }
 
     if (this.state.status !== "ACTIVE") {
+      return;
+    }
+
+    if (this.state.status === "ACTIVE" && char === "Escape") {
+      // Restart the game while it is running from keyboard.
+      this.startGame();
       return;
     }
 
@@ -181,7 +188,6 @@ export default class App extends React.Component {
     return (
       <HangmanApp>
         <Header>Hangman</Header>
-        <GameHint>{this.state.game_hint}</GameHint>
         {(this.state.status === "ACTIVE" ||
           this.state.status === "PENDING") && (
           <div>
@@ -224,8 +230,9 @@ export default class App extends React.Component {
         {this.state.status === "FINISHED" && (
           <div>Game score: {this.state.score}</div>
         )}
-
-        {/* <div onClick={this.startGame}>New game</div> */}
+        <GameHint onClick={this.startGame} autoFocus>
+          {this.state.game_hint}
+        </GameHint>
       </HangmanApp>
     );
   }

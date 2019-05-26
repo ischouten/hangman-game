@@ -38,9 +38,7 @@ def create_game():
     session.clear()
     game = HangmanGame()
     game.start()
-    session["game"] = game.as_dict()
-
-    log.debug(f"Game info: {game.as_dict()}")
+    write_game_state_to_session(game)
 
     return game_status_safe(game), 200, {"Content-Type": "application/json"}
 
@@ -58,6 +56,7 @@ def game_status():
     """ Read game status """
 
     game_state = session.get("game")
+
     game = HangmanGame(game_state)
 
     return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
@@ -69,9 +68,8 @@ def guess_character(character):
 
     # Whatever the length is, pick the first character as the guess for now.
     character = str(character)
-
-    log.debug(f"game: {session.get('game')}")
     game_state = session.get("game")
+
     game = HangmanGame(game_state)
     game.guess(character)
 
@@ -107,7 +105,10 @@ def post_highscore():
 
 def write_game_state_to_session(game):
     """ Serializes the game state so that it can be stored. """
+
     session["game"] = game.as_dict()
+
+    log.debug(f"Wrote session data: {session}")
 
 
 if __name__ == "__main__":

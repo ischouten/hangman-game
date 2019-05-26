@@ -19,6 +19,9 @@ class HangmanGame:
     def __init__(self, game_state={}):
         """ Instantiate a game """
 
+        if game_state is None:
+            game_state = {}
+
         # Game status info
         self.status: str = game_state.get("status", "UNSTARTED")
         self.solution: str = game_state.get("solution", "")
@@ -46,11 +49,8 @@ class HangmanGame:
         self.guessed_chars = set()
         self.score = 0
         self.start_time = int(time.time())
-        return True
 
     def check_status(self) -> str:
-
-        log.debug(f"Game status: {self.status}")
 
         if self.status == "ACTIVE" and self.solution == self.guess_result and self.attempts_remaining():
             # Game is finished! Check for high scores and if it should be saved etc.
@@ -85,7 +85,7 @@ class HangmanGame:
     def guess(self, character) -> bool:
         """ Make a guess for the solution.  """
 
-        log.debug(f"Incoming guesss for {self.solution}: {character}")
+        log.debug(f"Incoming guesss for {self.solution}: {character} - {self.status}")
 
         # Check if the game is still active.
         self.check_status()
