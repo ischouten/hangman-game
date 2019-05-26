@@ -56,6 +56,8 @@ class HangmanGame:
 
     def check_status(self) -> str:
 
+        log.debug(f"Game status: {self.status}")
+
         if self.status == "ACTIVE" and self.solution == self.guess_result and self.attempts_remaining():
             # Game is finished! Check for high scores and if it should be saved etc.
             # Score is calculated so that it is higher if you have finished in less attempts and time.
@@ -72,7 +74,7 @@ class HangmanGame:
             if len(highscores) < 5 or self.score > highscores[-1].get("score"):
                 # Allows the game to be saved.
                 self.status = "HIGHSCORE"
-                self.game_hint = "Congratulations. Top 5 score!"
+                self.game_hint = f"Congratulations. {self.solution} is correct!"
 
         if self.status == "ACTIVE" and len(self.guessed_chars) >= max_guesses:
             self.status = "GAME_OVER"
