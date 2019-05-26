@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Hangman | Igor",
+  "name": "Hangman Game | Igor Schouten",
   "icons": [
     {
       "src": "favicon.ico",

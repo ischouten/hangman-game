@@ -93,7 +93,6 @@ export default class App extends React.Component {
       .then((response) => response.json())
       .then((json) => {
         this.setState({ highscores: json });
-        console.log("Highscores:", json);
       });
   };
 
@@ -127,20 +126,15 @@ export default class App extends React.Component {
   // Make a guess by capturing keyboard input
   checkInput = async (e) => {
     const char = e.key;
-    console.log(char);
 
-    if (char.match(/[ ]/gi)) {
+    if (char.match(/[ ]/gi) || char === "Escape") {
+      // Space and escape should start a new game
       this.startGame();
       return;
     }
 
     if (this.state.status !== "ACTIVE") {
-      return;
-    }
-
-    if (this.state.status === "ACTIVE" && char === "Escape") {
-      // Restart the game while it is running from keyboard.
-      this.startGame();
+      // If we're not restarting the game, but enter keys, don't do anything.
       return;
     }
 
@@ -157,10 +151,8 @@ export default class App extends React.Component {
         .then((response) => response.json())
         .then((json) => {
           this.setState(json);
-          console.log(this.state);
           if (json.status === "GAME_OVER" || json.status === "FINISHED") {
             this.setState({ showScores: true });
-            console.log(this.state);
           } else if (json.status === "HIGHSCORE") {
             // Clear event listener so that the score can be inputted..
             document.removeEventListener("keyup", this.checkInput);
@@ -175,7 +167,6 @@ export default class App extends React.Component {
 
   //Call game status
   loadStatus = async () => {
-    console.log("Loading status data");
     await fetch(this.base_url + "status", {
       headers: {
         "Content-Type": "application/json",
@@ -184,7 +175,6 @@ export default class App extends React.Component {
     })
       .then((response) => response.json())
       .then((json) => {
-        console.log("Json data ", json);
         this.setState(json);
       });
   };
@@ -195,7 +185,6 @@ export default class App extends React.Component {
   };
 
   handlePlayerNameChange = (e) => {
-    console.log("Key", e.key);
     if (e.key === "Enter") {
       this.postHighscore();
     }
@@ -211,11 +200,11 @@ export default class App extends React.Component {
     const GallowImage = () => {
       if (this.state.guessed_chars.length == 1) {
         return <Gallow src={Gallow1} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length == 2) {
+      } else if (this.state.guessed_chars.length === 2) {
         return <Gallow src={Gallow2} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length == 3) {
+      } else if (this.state.guessed_chars.length === 3) {
         return <Gallow src={Gallow3} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length == 4) {
+      } else if (this.state.guessed_chars.length === 4) {
         return <Gallow src={Gallow4} alt="Gallow" />;
       }
       return null;
