@@ -4,14 +4,17 @@
 Guess a randomly picked word within 5 times, or be hung... Good luck! 😃
 
 ## To run locally
+Install dependencies:
+- `pipenv install`
 
-`pipenv run serve`
+Run the flask webserver
+- `pipenv run serve`
 
 ## Check it out live on Heroku
 https://ischouten-hangman.herokuapp.com
 
 ## Run from cli:
-`pipenv run python cli.py`
+`pipenv run python cli.py` (make sure to have run `pipenv install` first.)
 
 ## Deploy to heroku
 
