@@ -82,7 +82,6 @@ def post_highscore():
 def guess_character(character):
     """ Make a guess for a character """
 
-    log.debug(f"App secret {app.secret_key}")
     # Whatever the length is, pick the first character as the guess for now.
     character = str(character)
 
