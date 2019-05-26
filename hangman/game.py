@@ -4,6 +4,7 @@ import logquicky
 import time
 from hangman.datastore import DataStore
 
+
 log = logquicky.load("hangman-log")
 
 word_pool = ["3dhubs", "marvin", "print", "filament", "order", "layer"]
@@ -16,11 +17,8 @@ class HangmanGame:
 
     """ Game of hangman """
 
-    def __init__(self, game_state={}):
+    def __init__(self, game_state):
         """ Instantiate a game """
-
-        if game_state is None:
-            game_state = {}
 
         # Game status info
         self.status: str = game_state.get("status", "UNSTARTED")

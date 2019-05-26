@@ -36,7 +36,7 @@ def create_game():
 
     # Make sure session is clean.
     session.clear()
-    game = HangmanGame()
+    game = HangmanGame(game_state={})
     game.start()
     write_game_state_to_session(game)
 
@@ -47,7 +47,6 @@ def game_status_safe(game) -> dict:
     """ Takes the game dict and removes unwanted properties from it """
 
     game_dict = game.as_dict()
-    del game_dict["solution"]
     return jsonify(game_dict)
 
 
@@ -59,7 +58,7 @@ def game_status():
 
     game = HangmanGame(game_state)
 
-    return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
+    return game_status_safe(game), 200, {"Content-Type": "application/json"}
 
 
 @app.route("/guess/<string:character>", methods=["POST"])
@@ -76,10 +75,9 @@ def guess_character(character):
     # Update game progress to session
     write_game_state_to_session(game)
 
-    return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
+    return game_status_safe(game), 200, {"Content-Type": "application/json"}
 
 
-### HIGHSCORES
 @app.route("/highscores", methods=["GET"])
 def highscores():
     """ Load top 5 high scores """
