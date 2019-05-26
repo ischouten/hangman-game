@@ -47,7 +47,7 @@ def create_game():
 def game_status():
     """ Read game status """
 
-    game_state = session.get("game")
+    game_state = session.get("game", {})
 
     game = HangmanGame(game_state)
 
@@ -60,7 +60,7 @@ def guess_character(character):
 
     # Whatever the length is, pick the first character as the guess for now.
     character = str(character)
-    game_state = session.get("game")
+    game_state = session.get("game", {})
 
     game = HangmanGame(game_state)
     game.guess(character)
@@ -85,9 +85,12 @@ def post_highscore():
 
     player_name = str(request.json.get("player_name"))
 
-    if session.get("game").status != "HIGHSCORE":
+    if session.get("game").get("status") != "HIGHSCORE":
         return jsonify({"msg": "Sorry... this is no highscore."}), 401, {"Content-Type": "application/json"}
-    session.get("game").save_as_highscore(player_name)
+
+    game_state = session.get("game")
+    game = HangmanGame(game_state)
+    game.save_as_highscore(player_name)
 
     # Respond with the new list of highscores.
     highscores = ds.load_highscores()

@@ -17,6 +17,12 @@ const HangmanApp = styled.div`
     padding: 5px;
     text-align: center;
   }
+
+  input,
+  button {
+    font-family: inherit;
+    font-size: 1em;
+  }
 `;
 
 const GameHint = styled.div`

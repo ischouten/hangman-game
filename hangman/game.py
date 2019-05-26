@@ -58,7 +58,7 @@ class HangmanGame:
             self.calculate_score()
 
             self.status = "FINISHED"
-            self.game_hint = f"Congratulations! Your score: {self.score}.\nPress space to play again."
+            self.game_hint = f"Congratulations! '{self.solution}' is correct.\nYour score: {self.score}.\n"
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
@@ -67,7 +67,7 @@ class HangmanGame:
             if len(highscores) < 5 or self.score > highscores[-1].get("score"):
                 # Allows the game to be saved.
                 self.status = "HIGHSCORE"
-                self.game_hint = f"Congratulations. {self.solution} is correct!"
+                self.game_hint = f"Congratulations. '{self.solution}' is correct!"
 
         if self.status == "ACTIVE" and len(self.guessed_chars) >= max_guesses:
             self.status = "GAME_OVER"
