@@ -22,7 +22,7 @@ class HangmanGame:
         # Game status info
         self.status: str = "ACTIVE"
         self.solution: str = ""
-        self.guess_result: str
+        self.guess_result: str = ""
         self.guessed_chars = set()
 
         self.score: int = 0
@@ -74,6 +74,7 @@ class HangmanGame:
 
         if len(self.guessed_chars) >= max_guesses:
             self.status = "GAME_OVER"
+            self.game_hint = "Press space to start a new game."
 
         else:
             log.info(f"So far, you discovered: {self.guess_result} and {self.attempts_remaining()} guesses left.")

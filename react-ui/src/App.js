@@ -2,26 +2,31 @@ import React from "react";
 import styled from "styled-components";
 
 const HangmanApp = styled.div`
-
-  display: flex
-  flex-direction: column;
-  justify-content: space-between;
+  display: absolute;
   align-content: center;
-  min-width: 600px;
-  width: 50vw;
+  max-width: 600px;
+  width: 90vw;
   height: 70vh;
   transform: translateY(15%);
   margin: auto;
   border: solid 1px #cccccc;
 
   div {
-    width: 90%;
-    border: solid 1px #999999;
     margin: auto;
     padding: 5px;
     text-align: center;
   }
+`;
 
+const GameHint = styled.div`
+  position: absolute;
+  bottom: 5%;
+  margin: auto;
+  width: 100%;
+`;
+
+const Header = styled.h1`
+  text-align: center;
 `;
 
 export default class App extends React.Component {
@@ -29,11 +34,11 @@ export default class App extends React.Component {
     super(props);
 
     this.state = {
-      game_hint: "Press spacebar to start"
+      game_hint: "Press spacebar to start new game",
     };
+
     // Add the eventListener to catch keyboard presses.
     // Add a little bit of timeout to prevent triggering while loading document.
-
     document.addEventListener("keyup", this.checkInput);
 
     if (process.env.NODE_ENV === "development") {
