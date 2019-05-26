@@ -43,13 +43,6 @@ def create_game():
     return game_status_safe(game), 200, {"Content-Type": "application/json"}
 
 
-def game_status_safe(game) -> dict:
-    """ Takes the game dict and removes unwanted properties from it """
-
-    game_dict = game.as_dict()
-    return jsonify(game_dict)
-
-
 @app.route("/status", methods=["GET"])
 def game_status():
     """ Read game status """
@@ -107,6 +100,15 @@ def write_game_state_to_session(game):
     session["game"] = game.as_dict()
 
     log.debug(f"Wrote session data: {session}")
+
+
+def game_status_safe(game) -> dict:
+    """ Takes the game dict and removes unwanted properties from it """
+
+    game_dict = game.as_dict()
+    del game_dict["solution"]
+
+    return jsonify(game_dict)
 
 
 if __name__ == "__main__":

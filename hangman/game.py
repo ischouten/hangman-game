@@ -2,6 +2,7 @@ import random
 import re
 import logquicky
 import time
+import copy
 from hangman.datastore import DataStore
 
 
@@ -35,6 +36,7 @@ class HangmanGame:
 
     def as_dict(self):
         game = self.__dict__
+        game = copy.deepcopy(self.__dict__)
         game["guessed_chars"] = "".join(self.guessed_chars)
         return game
 
