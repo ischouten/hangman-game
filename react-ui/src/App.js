@@ -36,6 +36,14 @@ const GameHint = styled.div`
   width: 100%;
 `;
 
+const Credits = styled.div`
+  position: absolute;
+  bottom: -5%;
+  margin: auto;
+  width: 100%;
+  font-size: 0.5em;
+`;
+
 const Gallow = styled.img`
   max-width: 50%;
   height: auto;
@@ -262,6 +270,10 @@ export default class App extends React.Component {
         <GameHint onClick={this.startGame} autoFocus>
           {this.state.game_hint}
         </GameHint>
+        <Credits>
+          By Igor Schouten - Check it out on{" "}
+          <a href="https://github.com/ischouten/hangman-game">Github</a>
+        </Credits>
       </HangmanApp>
     );
   }

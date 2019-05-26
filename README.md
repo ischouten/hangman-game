@@ -10,6 +10,9 @@ Guess a randomly picked word within 5 times, or be hung... Good luck! 😃
 ## Check it out live on Heroku
 https://ischouten-hangman.herokuapp.com
 
+## Run from cli:
+`pipenv run python cli.py`
+
 ## Deploy to heroku
 
 1. Make sure requirements are frozen. `pipenv lock`

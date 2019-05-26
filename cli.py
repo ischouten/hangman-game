@@ -5,7 +5,7 @@ from hangman.game import HangmanGame
 
 log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
-game = HangmanGame()
+game = HangmanGame({})
 game.start()
 
 while game.attempts_remaining() > 0 and game.status == "ACTIVE":
