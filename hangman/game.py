@@ -19,6 +19,8 @@ class HangmanGame:
     def __init__(self, game_info=None):
         """ Instantiate a game """
 
+        self.game_info = game_info
+
         # Game status info
         self.status: str = "UNSTARTED"
         self.solution: str = ""
@@ -56,7 +58,8 @@ class HangmanGame:
 
     def check_status(self) -> str:
 
-        if self.solution == self.guess_result and self.attempts_remaining():
+        log.debug(f"Session info: {self.game_info}")
+        if self.status == "ACTIVE" and self.solution == self.guess_result and self.attempts_remaining():
             # Game is finished! Check for high scores and if it should be saved etc.
             # Score is calculated so that it is higher if you have finished in less attempts and time.
 
@@ -74,7 +77,7 @@ class HangmanGame:
                 self.status = "HIGHSCORE"
                 self.game_hint = "Congratulations. Top 5 score!"
 
-        if len(self.guessed_chars) >= max_guesses:
+        if self.status == "ACTIVE" and len(self.guessed_chars) >= max_guesses:
             self.status = "GAME_OVER"
             self.game_hint = "Press space to start a new game."
 
