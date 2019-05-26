@@ -5,7 +5,7 @@ from hangman.game import HangmanGame
 from hangman.datastore import DataStore
 from flask_cors import CORS
 
-from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify
+from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify, url_for
 
 ds = DataStore.get_instance()
 
@@ -62,12 +62,28 @@ def highscores():
     return jsonify(highscores)
 
 
+@app.route("/highscore", methods=["POST"])
+def post_highscore():
+    """ Save highscore to database. """
+
+    player_name = str(request.json.get("player_name"))
+
+    if game.status != "HIGHSCORE":
+        return jsonify({"msg": "Sorry... this is no highscore."}), 401, {"Content-Type": "application/json"}
+    game.save_as_highscore(player_name)
+
+    # Respond with the new list of highscores.
+    highscores = ds.load_highscores()
+    return jsonify(highscores)
+
+
 @app.route("/guess/<string:character>", methods=["POST"])
 def guess_character(character):
     """ Make a guess for a character """
 
     # Whatever the length is, pick the first character as the guess for now.
     character = str(character)
+
     game.guess(character)
 
     # Update session
@@ -85,6 +101,7 @@ def write_game_state_to_session():
     session["score"] = game.score
     session["start_time"] = game.start_time
     session["game_hint"] = game.game_hint
+    session["highscores"] = game.highscores
 
 
 def serialize_status():

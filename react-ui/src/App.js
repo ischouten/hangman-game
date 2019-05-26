@@ -37,6 +37,8 @@ export default class App extends React.Component {
     this.state = {
       game_hint: "Press spacebar to start new game",
       showScores: false,
+      registerHighscore: false,
+      player_name: ""
     };
 
     // Add the eventListener to catch keyboard presses.
@@ -70,6 +72,29 @@ export default class App extends React.Component {
       .then((json) => {
         this.setState({ highscores: json });
         console.log("Highscores:", json);
+      });
+  };
+
+  postHighscore = async () => {
+    console.log("Posting highscore");
+    await fetch(this.base_url + "highscore", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        player_name: this.state.player_name
+      })
+    })
+      .then((response) => response.json())
+      .then((json) => {
+        // Update state so that the UI updates.
+        this.setState({
+          highscores: json,
+          showScores: true,
+          postHighscore: false
+        });
       });
   };
 
@@ -113,28 +138,20 @@ export default class App extends React.Component {
     }
   };
 
-  // // Call game status
-  // checkStatus = async () => {
-  //   console.log("Loading status data");
-  //   await fetch(this.base_url + "status", {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Accept: "application/json"
-  //     }
-  //   })
-  //     .then((response) => response.json())
-  //     .then((json) => {
-  //       console.log("Json data ", json);
-  //       this.setState(json);
-  //     });
-  // };
-
   componentWillMount = () => {
     this.loadHighscores();
   };
 
   finishGame = async () => {
     document.removeEventListener("keyup", this.checkInput);
+  };
+
+  handleChange = (e) => {
+    if (e.key === "Enter") {
+      this.postHighscore();
+    }
+
+    this.setState({ player_name: e.target.value });
   };
 
   render() {
@@ -168,11 +185,20 @@ export default class App extends React.Component {
           <div>
             <h2>Highscore!</h2>
             <div>Score: {this.state.score}</div>
+            <input
+              id="playerName"
+              type="text"
+              value={this.state.player_name}
+              onChange={this.handleChange}
+              placeholder="Enter your name"
+            />
+            <button type="button" onClick={this.postHighscore}>
+              Save
+            </button>
           </div>
         )}
 
-        {(this.state.status === "FINISHED" ||
-          this.state.status === "HIGHSCORE") && (
+        {this.state.status === "FINISHED" && (
           <div>Game score: {this.state.score}</div>
         )}
 
