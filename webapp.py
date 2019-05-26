@@ -42,16 +42,22 @@ def create_game():
 
     log.debug(f"Game info: {game.as_dict()}")
 
-    return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
+    return game_status_safe(game), 200, {"Content-Type": "application/json"}
+
+
+def game_status_safe(game) -> dict:
+    """ Takes the game dict and removes unwanted properties from it """
+
+    game_dict = game.as_dict()
+    del game_dict["solution"]
+    return jsonify(game_dict)
 
 
 @app.route("/status", methods=["GET"])
 def game_status():
     """ Read game status """
 
-    write_game_state_to_session(game)
     game_state = session.get("game")
-
     game = HangmanGame(game_state)
 
     return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
@@ -69,12 +75,13 @@ def guess_character(character):
     game = HangmanGame(game_state)
     game.guess(character)
 
-    # Update session
+    # Update game progress to session
     write_game_state_to_session(game)
 
     return jsonify(game.as_dict()), 200, {"Content-Type": "application/json"}
 
 
+### HIGHSCORES
 @app.route("/highscores", methods=["GET"])
 def highscores():
     """ Load top 5 high scores """
@@ -99,9 +106,7 @@ def post_highscore():
 
 
 def write_game_state_to_session(game):
-
-    log.debug("Updating session information")
-
+    """ Serializes the game state so that it can be stored. """
     session["game"] = game.as_dict()
 
 

@@ -3,7 +3,6 @@ import re
 import logquicky
 import time
 from hangman.datastore import DataStore
-from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify, url_for
 
 log = logquicky.load("hangman-log")
 
@@ -19,8 +18,6 @@ class HangmanGame:
 
     def __init__(self, game_state={}):
         """ Instantiate a game """
-
-        # game_state is the dict
 
         # Game status info
         self.status: str = game_state.get("status", "UNSTARTED")
@@ -58,7 +55,6 @@ class HangmanGame:
         if self.status == "ACTIVE" and self.solution == self.guess_result and self.attempts_remaining():
             # Game is finished! Check for high scores and if it should be saved etc.
             # Score is calculated so that it is higher if you have finished in less attempts and time.
-
             self.calculate_score()
 
             self.status = "FINISHED"
@@ -81,10 +77,6 @@ class HangmanGame:
             log.info(f"So far, you discovered: {self.guess_result} and {self.attempts_remaining()} guesses left.")
 
         return self.status
-
-    def calculate_score(self):
-        time_taken = int(time.time()) - int(self.start_time)
-        self.score = int(self.attempts_remaining() * 1000 / time_taken)
 
     def attempts_remaining(self) -> int:
         """ Checks set of invalidly guessed characters and returns max_guesses - length """
@@ -157,3 +149,7 @@ class HangmanGame:
         word = word_pool[word_int - 1].lower()
 
         return word
+
+    def calculate_score(self):
+        time_taken = int(time.time()) - int(self.start_time)
+        self.score = int(self.attempts_remaining() * 1000 / time_taken)
