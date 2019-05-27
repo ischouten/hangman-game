@@ -6,6 +6,6 @@
     "yarn": "1.13.0"
   },
   "scripts": {
-    "build": "cd react-ui && yarn install && build"
+    "build": "cd react-ui && yarn install && yarn build"
   }
 }
