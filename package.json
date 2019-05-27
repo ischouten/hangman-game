@@ -5,10 +5,7 @@
     "node": "11.11.0",
     "yarn": "1.13.0"
   },
-  "dependencies": {
-    "react-scripts": "3.0.1"
-  },
   "scripts": {
-    "build": "cd react-ui && yarn build"
+    "build": "cd react-ui && yarn install && build"
   }
 }
