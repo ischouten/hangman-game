@@ -19,8 +19,7 @@ https://ischouten-hangman.herokuapp.com
 ## Deploy to heroku
 
 1. Make sure requirements are frozen. `pipenv lock`
-2. Make sure frontend is built for production `cd react-ui && yarn build`
-3. Push to heroku. `git push heroku master`
+2. Push to heroku. `git push heroku master`
 
 ### Development release
 - heroku create ischouten-hangman-dev --remote develop

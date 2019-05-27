@@ -95,7 +95,10 @@ export default class App extends React.Component {
   startGame = async () => {
     console.log("Starting new game");
     this.setState({ showScores: false });
-    await fetch(this.base_url + "new", { method: "POST" })
+    await fetch(this.base_url + "new", {
+      method: "POST",
+      credentials: "include"
+    })
       .then((response) => response.json())
       .then((json) => {
         // Update state so that the UI updates.
@@ -106,7 +109,7 @@ export default class App extends React.Component {
   // Load highscores
   loadHighscores = async () => {
     console.log("Loading highscores");
-    await fetch(this.base_url + "highscores")
+    await fetch(this.base_url + "highscores", { credentials: "include" })
       .then((response) => response.json())
       .then((json) => {
         this.setState({ highscores: json });
@@ -123,7 +126,8 @@ export default class App extends React.Component {
       },
       body: JSON.stringify({
         player_name: this.state.player_name
-      })
+      }),
+      credentials: "include"
     })
       .then((response) => response.json())
       .then((json) => {
@@ -146,7 +150,7 @@ export default class App extends React.Component {
 
     if (char.match(/[ ]/gi) || char === "Escape") {
       // Space and escape should start a new game
-    this.setState({ char: "", lastChar: char });
+      this.setState({ char: "", lastChar: char });
       this.startGame();
       return;
     }
@@ -164,7 +168,8 @@ export default class App extends React.Component {
         game_hint: "Checking..."
       });
       await fetch(this.base_url + "guess/" + char, {
-        method: "POST"
+        method: "POST",
+        credentials: "include"
       })
         .then((response) => response.json())
         .then((json) => {
@@ -189,7 +194,8 @@ export default class App extends React.Component {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json"
-      }
+      },
+      credentials: "include"
     })
       .then((response) => response.json())
       .then((json) => {
@@ -304,7 +310,6 @@ export default class App extends React.Component {
 
         {/* <div>{this.state.lastChar}</div> */}
         {/* <StartButton onClick={this.startGame}>New game</StartButton> */}
-
       </HangmanApp>
     );
   }

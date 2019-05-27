@@ -15,7 +15,7 @@ app = Flask(__name__, static_folder=f"{serve_dir}/static", template_folder=f"{se
 
 
 # Allow cors for now in development to let frontend talk from development dir
-CORS(app)
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": ["http://localhost:3000"]}})
 
 log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 
