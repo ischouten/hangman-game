@@ -22,6 +22,14 @@ https://ischouten-hangman.herokuapp.com
 2. Make sure frontend is built for production `cd react-ui && yarn build`
 3. Push to heroku. `git push heroku master`
 
+### Development release
+- heroku create ischouten-hangman-dev --remote develop
+- git remote add heroku-dev https://git.heroku.com/ischouten-hangman-dev.git
+
+To push and create a build for development:
+- git push heroku-dev develop:master
+
+
 ## Notes
 
 - Devices without a physical keyboard are currently not supported.
