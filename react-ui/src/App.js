@@ -15,6 +15,9 @@ const HangmanApp = styled.div`
   transform: translateY(15%);
   margin: auto;
   border: solid 1px #cccccc;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 
   div {
     margin: auto;
@@ -30,8 +33,6 @@ const HangmanApp = styled.div`
 `;
 
 const GameHint = styled.div`
-  position: absolute;
-  bottom: 5%;
   margin: auto;
   width: 100%;
 `;
@@ -53,6 +54,20 @@ const Header = styled.h1`
   text-align: center;
 `;
 
+const StartButton = styled.button`
+  font-family: inherit;
+  font-size: 1em;
+  align: center;
+`;
+
+const InputField = styled.input`
+  border: solid 1px #cccccc;
+  padding: 10px;
+  font-size: 1em;
+  font-family: inherit;
+  z-index: 1;
+`;
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -61,7 +76,9 @@ export default class App extends React.Component {
       game_hint: "Press spacebar to start new game",
       showScores: false,
       showRegisterScore: false,
-      player_name: ""
+      player_name: "",
+      char: "",
+      lastChar: ""
     };
 
     // Add the eventListener to catch keyboard presses.
@@ -125,10 +142,11 @@ export default class App extends React.Component {
 
   // Make a guess by capturing keyboard input
   checkInput = async (e) => {
-    const char = e.key;
+    const char = e ? e.key : this.state.char;
 
     if (char.match(/[ ]/gi) || char === "Escape") {
       // Space and escape should start a new game
+    this.setState({ char: "", lastChar: char });
       this.startGame();
       return;
     }
@@ -190,6 +208,20 @@ export default class App extends React.Component {
     }
 
     this.setState({ player_name: e.target.value });
+  };
+
+  handleMobileInput = (e) => {
+    e.preventDefault();
+
+    let char = e.key;
+
+    const keycode = e.which || e.code;
+    if (!char) {
+      char = String.fromCharCode(keycode);
+    }
+
+    this.setState({ char });
+    this.checkInput();
   };
 
   render() {
@@ -263,6 +295,16 @@ export default class App extends React.Component {
           By Igor Schouten - Check it out on{" "}
           <a href="https://github.com/ischouten/hangman-game">Github</a>
         </Credits>
+        {/* <InputField
+          type="text"
+          value={this.state.char}
+          autoFocus
+          onChange={this.checkInput}
+        /> */}
+
+        {/* <div>{this.state.lastChar}</div> */}
+        {/* <StartButton onClick={this.startGame}>New game</StartButton> */}
+
       </HangmanApp>
     );
   }

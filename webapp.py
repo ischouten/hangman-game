@@ -62,6 +62,8 @@ def guess_character(character):
     character = str(character)
     game_state = session.get("game", {})
 
+    log.debug(f"Game before checking guess: {game_state}")
+
     game = HangmanGame(game_state)
     game.guess(character)
 

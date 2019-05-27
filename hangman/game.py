@@ -21,6 +21,10 @@ class HangmanGame:
     def __init__(self, game_state):
         """ Instantiate a game """
 
+        log.debug("Started a new game")
+        if game_state is None:
+            game_state = {}
+
         # Game status info
         self.status: str = game_state.get("status", "UNSTARTED")
         self.solution: str = game_state.get("solution", "")
@@ -32,7 +36,7 @@ class HangmanGame:
         # Variables used for calculating highscore
         self.start_time = game_state.get("start_time", 0)
 
-        self.game_hint = game_state.get("game_hint", "Press spacebar to start game")
+        self.game_hint = game_state.get("game_hint", "Start new game")
 
     def as_dict(self):
         game = self.__dict__
@@ -58,7 +62,7 @@ class HangmanGame:
             self.calculate_score()
 
             self.status = "FINISHED"
-            self.game_hint = f"Congratulations! '{self.solution}' is correct.\nYour score: {self.score}.\n"
+            self.game_hint = f"Congratulations! Your score: {self.score}.\nPress spacebar to play again."
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
