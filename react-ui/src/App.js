@@ -54,12 +54,6 @@ const Header = styled.h1`
   text-align: center;
 `;
 
-const StartButton = styled.button`
-  font-family: inherit;
-  font-size: 1em;
-  align: center;
-`;
-
 const InputField = styled.input`
   border: solid 1px #cccccc;
   padding: 10px;
@@ -76,9 +70,7 @@ export default class App extends React.Component {
       game_hint: "Press spacebar to start new game",
       showScores: false,
       showRegisterScore: false,
-      player_name: "",
-      char: "",
-      lastChar: ""
+      player_name: ""
     };
 
     // Add the eventListener to catch keyboard presses.
@@ -146,11 +138,18 @@ export default class App extends React.Component {
 
   // Make a guess by capturing keyboard input
   checkInput = async (e) => {
-    const char = e ? e.key : this.state.char;
+    let char = e ? e.key : null;
+
+    if (char === "Unidentified") {
+      // Mobile keyboards send 'Unidentified' keyboard events.
+      // Ignore these and use the simulated event sent from the checkDirectInput method.
+      return;
+    }
+
+    console.log("Char in checkInput:", char);
 
     if (char.match(/[ ]/gi) || char === "Escape") {
       // Space and escape should start a new game
-      this.setState({ char: "", lastChar: char });
       this.startGame();
       return;
     }
@@ -216,18 +215,15 @@ export default class App extends React.Component {
     this.setState({ player_name: e.target.value });
   };
 
-  handleMobileInput = (e) => {
+  checkDirectInput = (e) => {
     e.preventDefault();
 
-    let char = e.key;
+    console.log("Event from direct input", e.target.value);
+    const char = { key: e.target.value };
 
-    const keycode = e.which || e.code;
-    if (!char) {
-      char = String.fromCharCode(keycode);
-    }
-
-    this.setState({ char });
-    this.checkInput();
+    // Reset the formfield so that it is empty again.
+    e.target.value = "";
+    this.checkInput(char);
   };
 
   render() {
@@ -236,7 +232,7 @@ export default class App extends React.Component {
       : 5;
 
     const GallowImage = () => {
-      if (this.state.guessed_chars.length == 1) {
+      if (this.state.guessed_chars.length === 1) {
         return <Gallow src={Gallow1} alt="Gallow" />;
       } else if (this.state.guessed_chars.length === 2) {
         return <Gallow src={Gallow2} alt="Gallow" />;
@@ -263,18 +259,15 @@ export default class App extends React.Component {
             </div>
           </div>
         )}
-
         {this.state.status === "GAME_OVER" && (
           <div>
             <p>Game over</p>
             <h1>:(</h1>
           </div>
         )}
-
         {this.state.showScores && (
           <ScoreBoard highscores={this.state.highscores} />
         )}
-
         {this.state.showRegisterScore && (
           <div>
             <h2>New highscore!</h2>
@@ -290,7 +283,6 @@ export default class App extends React.Component {
             <button onClick={this.postHighscore}>Send</button>
           </div>
         )}
-
         {this.state.status === "FINISHED" && (
           <div>Game score: {this.state.score}</div>
         )}
@@ -298,18 +290,15 @@ export default class App extends React.Component {
           {this.state.game_hint}
         </GameHint>
         <Credits>
-          By Igor Schouten - Check it out on{" "}
+          By Igor Schouten - Check it out on
           <a href="https://github.com/ischouten/hangman-game">Github</a>
         </Credits>
-        {/* <InputField
+        <InputField
           type="text"
-          value={this.state.char}
           autoFocus
-          onChange={this.checkInput}
-        /> */}
-
-        {/* <div>{this.state.lastChar}</div> */}
-        {/* <StartButton onClick={this.startGame}>New game</StartButton> */}
+          defaultValue=""
+          onChange={this.checkDirectInput}
+        />
       </HangmanApp>
     );
   }
