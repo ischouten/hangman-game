@@ -24,8 +24,7 @@ const Playfield = styled.div`
   }
 
   div {
-    max-font-size: 2em;
-    font-size: 4vmin;
+    font-size: 3vmin;
   }
 `;
 
