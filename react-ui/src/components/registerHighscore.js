@@ -1,6 +1,16 @@
 import React from "react";
 
 export default (props) => {
+  const inputField = document.getElementById("playerName");
+
+  if (inputField) {
+    inputField.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
+        props.postHandler();
+      }
+    });
+  }
+
   return (
     <div>
       <h2>New highscore!</h2>

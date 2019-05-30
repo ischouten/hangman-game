@@ -240,10 +240,6 @@ export default class App extends React.Component {
   };
 
   handlePlayerNameChange = (e) => {
-    if (e.key === "Enter") {
-      this.postHighscore();
-    }
-
     this.setState({ player_name: e.target.value });
   };
 
