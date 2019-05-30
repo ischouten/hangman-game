@@ -1,11 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 import ScoreBoard from "./components/scoreboard";
-import Gallow0 from "./static/0.png";
-import Gallow1 from "./static/1.png";
-import Gallow2 from "./static/2.png";
-import Gallow3 from "./static/3.png";
-import Gallow4 from "./static/4.png";
+import PlayField from "./components/playfield";
+import GameOver from "./components/gameover";
+import RegisterHighscore from "./components/registerHighscore";
 
 const Screen = styled.div`
   width: 100vw;
@@ -37,9 +35,19 @@ const Game = styled.div`
   }
 `;
 
+const Header = styled.h1`
+  text-align: center;
+
+  @media screen and (max-height: 400px) {
+    display: none;
+  }
+`;
+
 const GameHint = styled.div`
   margin: auto;
   width: 100%;
+  cursor: pointer;
+  font-size: 1em;
 `;
 
 const Credits = styled.div`
@@ -49,24 +57,6 @@ const Credits = styled.div`
   position: absolute;
   margin: auto;
   bottom: 5px;
-
-  @media screen and (max-height: 400px) {
-    display: none;
-  }
-`;
-
-const Gallow = styled.img`
-  display: visible;
-  max-width: 50%;
-  height: auto;
-
-  @media screen and (max-height: 400px) {
-    display: none;
-  }
-`;
-
-const Header = styled.h1`
-  text-align: center;
 
   @media screen and (max-height: 400px) {
     display: none;
@@ -110,7 +100,11 @@ export default class App extends React.Component {
 
   changeFocus = () => {
     // Reset focus to open the mobile keyboard.
-    document.getElementById("directInputField").focus();
+    try {
+      document.getElementById("directInputField").focus();
+    } catch (err) {
+      console.log("No direct input field");
+    }
   };
 
   startGame = async () => {
@@ -162,9 +156,13 @@ export default class App extends React.Component {
           postHighscore: false,
           showRegisterScore: false
         });
-
+      })
+      .then(() => {
         // Re-enable the event listener for accepting space bar for new game.
         document.addEventListener("keyup", this.checkInput);
+
+        // Refresh status of the game.
+        this.loadStatus();
       });
   };
 
@@ -190,13 +188,13 @@ export default class App extends React.Component {
     }
 
     // Allow only characters a-z and 0-9, and in that case, check if they are a match for the word we are looking for.
-    if (char.match(/[a-z0-9]/gi)) {
+    if (char.match(/[a-zA-Z0-9]/gi)) {
       this.setState({
         ...this.state,
         status: "PENDING",
         game_hint: "Checking..."
       });
-      await fetch(this.base_url + "guess/" + char, {
+      await fetch(this.base_url + "guess/" + char.toLowerCase(), {
         method: "POST",
         credentials: "include"
       })
@@ -206,7 +204,6 @@ export default class App extends React.Component {
           // TODO: This is not pretty.
 
           if (json.status !== "ACTIVE") {
-            document.getElementById("directInputField").blur();
             this.setState({ showScores: true });
 
             if (json.status === "HIGHSCORE") {
@@ -262,81 +259,43 @@ export default class App extends React.Component {
   };
 
   render() {
-    const guesses_left = this.state.guessed_chars
-      ? 5 - this.state.guessed_chars.length
-      : 5;
-
-    const GallowImage = () => {
-      let gallow_image = Gallow;
-
-      switch (guesses_left) {
-        case 4:
-          gallow_image = Gallow1;
-          break;
-        case 3:
-          gallow_image = Gallow2;
-          break;
-        case 2:
-          gallow_image = Gallow3;
-          break;
-        case 1:
-          gallow_image = Gallow4;
-          break;
-        default:
-          gallow_image = Gallow0;
-          break;
-      }
-
-      return <Gallow src={gallow_image} alt="Gallow" />;
-    };
-
     return (
       <Screen>
         <Header>Hangman</Header>
         <Game>
           <GameHint onClick={this.startGame}>{this.state.game_hint}</GameHint>
-          <DirectInputField
-            id="directInputField"
-            type="text"
-            autoFocus
-            defaultValue=""
-            onChange={this.checkDirectInput}
-          />
           {(this.state.status === "ACTIVE" ||
             this.state.status === "PENDING") && (
-            <div onClick={this.changeFocus}>
-              <h1>{this.state.guess_result}</h1>
-              <GallowImage />
-              <div>Guesses left: {guesses_left}</div>
-              <div>
-                <p>Tried: {this.state.guessed_chars}</p>
-              </div>
-            </div>
-          )}
-          {this.state.status === "GAME_OVER" && (
             <div>
-              <p>Game over</p>
-              <h1>:(</h1>
+              <DirectInputField
+                id="directInputField"
+                type="text"
+                autoFocus
+                defaultValue=""
+                onChange={this.checkDirectInput}
+              />
+              <PlayField
+                onClick={this.changeFocus}
+                result={this.state.guess_result}
+                guessed={this.state.guessed_chars}
+              />
             </div>
           )}
+
+          {this.state.status === "GAME_OVER" && <GameOver />}
+
+          {this.state.showRegisterScore && (
+            <RegisterHighscore
+              score={this.state.score}
+              playerNameHandle={this.handlePlayerNameChange}
+              postHandler={this.postHighscore}
+            />
+          )}
+
           {this.state.showScores && (
             <ScoreBoard highscores={this.state.highscores} />
           )}
-          {this.state.showRegisterScore && (
-            <div>
-              <h2>New highscore!</h2>
-              <div>Score: {this.state.score}</div>
-              <input
-                id="playerName"
-                type="text"
-                value={this.state.player_name}
-                onChange={this.handlePlayerNameChange}
-                autoFocus
-                placeholder="Enter your name"
-              />
-              <button onClick={this.postHighscore}>Send</button>
-            </div>
-          )}
+
           {this.state.status === "FINISHED" && (
             <div>Game score: {this.state.score}</div>
           )}

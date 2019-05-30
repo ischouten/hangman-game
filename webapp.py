@@ -94,6 +94,9 @@ def post_highscore():
     game = HangmanGame(game_state)
     game.save_as_highscore(player_name)
 
+    # Game state was highscore, but will change now..
+    write_game_state_to_session(game)
+
     # Respond with the new list of highscores.
     highscores = ds.load_highscores()
     return jsonify(highscores)

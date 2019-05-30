@@ -62,7 +62,7 @@ class HangmanGame:
             self.calculate_score()
 
             self.status = "FINISHED"
-            self.game_hint = f"Congratulations! Your score: {self.score}.\nClick to play again."
+            self.game_hint = f"Congratulations! You won.\nClick to play again."
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
@@ -143,7 +143,8 @@ class HangmanGame:
             return False
 
         ds.save_highscore(self.solution, self.score, player_name)
-        self.game_hint = "Highscore saved!"
+        self.status = "NOT_STARTED"
+        self.game_hint = "Highscore saved! Click or press space to play again."
         return True
 
     def select_word(self) -> str:
