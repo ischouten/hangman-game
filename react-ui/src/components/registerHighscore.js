@@ -1,16 +1,8 @@
 import React from "react";
 
+// const inputField = document.getElementById("playerName");
+
 export default (props) => {
-  const inputField = document.getElementById("playerName");
-
-  if (inputField) {
-    inputField.addEventListener("keyup", (e) => {
-      if (e.key === "Enter") {
-        props.postHandler();
-      }
-    });
-  }
-
   return (
     <div>
       <h2>New highscore!</h2>
@@ -21,6 +13,11 @@ export default (props) => {
         value={props.player_name}
         onChange={props.playerNameHandle}
         autoFocus
+        onKeyPress={(e) => {
+          if (e.key === "Enter") {
+            return props.postHandler();
+          }
+        }}
         placeholder="Enter your name"
       />
       <button onClick={props.postHandler}>Send</button>
