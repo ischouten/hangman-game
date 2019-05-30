@@ -6,18 +6,24 @@ import Gallow2 from "./static/2.png";
 import Gallow3 from "./static/3.png";
 import Gallow4 from "./static/4.png";
 
-const HangmanApp = styled.div`
-  display: absolute;
-  align-content: center;
-  max-width: 600px;
-  width: 90vw;
-  height: 70vh;
-  transform: translateY(15%);
-  margin: auto;
+const Screen = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+`;
+
+const Game = styled.div`
   border: solid 1px #cccccc;
+  max-width: 700px;
+  height: 600px;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  align-content: center;
 
   div {
     margin: auto;
@@ -38,10 +44,8 @@ const GameHint = styled.div`
 `;
 
 const Credits = styled.div`
-  position: absolute;
-  bottom: -5%;
-  margin: auto;
   width: 100%;
+  text-align: center;
   font-size: 0.5em;
 `;
 
@@ -54,12 +58,11 @@ const Header = styled.h1`
   text-align: center;
 `;
 
-const InputField = styled.input`
-  border: solid 1px #cccccc;
-  padding: 10px;
-  font-size: 1em;
-  font-family: inherit;
+const DirectInputField = styled.input`
+  color: transparent;
   z-index: 1;
+  outline: none;
+  border: none;
 `;
 
 export default class App extends React.Component {
@@ -83,9 +86,18 @@ export default class App extends React.Component {
     }
   }
 
+  changeFocus = () => {
+    // Reset focus to open the mobile keyboard.
+    document.getElementById("directInputField").focus();
+  };
+
   // Start a new game
   startGame = async () => {
     console.log("Starting new game");
+
+    // Set focus to the input field (necessary for mobile keyboards.)
+    this.changeFocus();
+
     this.setState({ showScores: false });
     await fetch(this.base_url + "new", {
       method: "POST",
@@ -245,61 +257,62 @@ export default class App extends React.Component {
     };
 
     return (
-      <HangmanApp>
-        <Header>Hangman</Header>
-        {(this.state.status === "ACTIVE" ||
-          this.state.status === "PENDING") && (
-          <div>
-            <h1>{this.state.guess_result}</h1>
-            <GallowImage />
-            <div>Guesses left: {guesses_left}</div>
-            <div>
-              <p>Tried characters:</p>
-              <p>{this.state.guessed_chars}</p>
+      <Screen>
+        <Game>
+          <Header>Hangman</Header>
+          <GameHint onClick={this.startGame}>{this.state.game_hint}</GameHint>
+          <DirectInputField
+            id="directInputField"
+            type="text"
+            autoFocus
+            defaultValue=""
+            onChange={this.checkDirectInput}
+          />
+          {(this.state.status === "ACTIVE" ||
+            this.state.status === "PENDING") && (
+            <div onClick={this.changeFocus}>
+              <h1>{this.state.guess_result}</h1>
+              <GallowImage />
+              <div>Guesses left: {guesses_left}</div>
+              <div>
+                <p>Tried characters:</p>
+                <p>{this.state.guessed_chars}</p>
+              </div>
             </div>
-          </div>
-        )}
-        {this.state.status === "GAME_OVER" && (
-          <div>
-            <p>Game over</p>
-            <h1>:(</h1>
-          </div>
-        )}
-        {this.state.showScores && (
-          <ScoreBoard highscores={this.state.highscores} />
-        )}
-        {this.state.showRegisterScore && (
-          <div>
-            <h2>New highscore!</h2>
-            <div>Score: {this.state.score}</div>
-            <input
-              id="playerName"
-              type="text"
-              value={this.state.player_name}
-              onChange={this.handlePlayerNameChange}
-              autoFocus
-              placeholder="Enter your name"
-            />
-            <button onClick={this.postHighscore}>Send</button>
-          </div>
-        )}
-        {this.state.status === "FINISHED" && (
-          <div>Game score: {this.state.score}</div>
-        )}
-        <GameHint onClick={this.startGame} autoFocus>
-          {this.state.game_hint}
-        </GameHint>
+          )}
+          {this.state.status === "GAME_OVER" && (
+            <div>
+              <p>Game over</p>
+              <h1>:(</h1>
+            </div>
+          )}
+          {this.state.showScores && (
+            <ScoreBoard highscores={this.state.highscores} />
+          )}
+          {this.state.showRegisterScore && (
+            <div>
+              <h2>New highscore!</h2>
+              <div>Score: {this.state.score}</div>
+              <input
+                id="playerName"
+                type="text"
+                value={this.state.player_name}
+                onChange={this.handlePlayerNameChange}
+                autoFocus
+                placeholder="Enter your name"
+              />
+              <button onClick={this.postHighscore}>Send</button>
+            </div>
+          )}
+          {this.state.status === "FINISHED" && (
+            <div>Game score: {this.state.score}</div>
+          )}
+        </Game>
         <Credits>
-          By Igor Schouten - Check it out on
+          By Igor Schouten - Check it out on{" "}
           <a href="https://github.com/ischouten/hangman-game">Github</a>
         </Credits>
-        <InputField
-          type="text"
-          autoFocus
-          defaultValue=""
-          onChange={this.checkDirectInput}
-        />
-      </HangmanApp>
+      </Screen>
     );
   }
 }
