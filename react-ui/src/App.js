@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import ScoreBoard from "./components/scoreboard";
+import Gallow0 from "./static/0.png";
 import Gallow1 from "./static/1.png";
 import Gallow2 from "./static/2.png";
 import Gallow3 from "./static/3.png";
@@ -8,7 +9,8 @@ import Gallow4 from "./static/4.png";
 
 const Screen = styled.div`
   width: 100vw;
-  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: -webkit-fill-available;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,13 +18,10 @@ const Screen = styled.div`
 `;
 
 const Game = styled.div`
-  border: solid 1px #cccccc;
   max-width: 700px;
-  height: 600px;
-  max-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   align-content: center;
 
   div {
@@ -47,15 +46,31 @@ const Credits = styled.div`
   width: 100%;
   text-align: center;
   font-size: 0.5em;
+  position: absolute;
+  margin: auto;
+  bottom: 5px;
+
+  @media screen and (max-height: 400px) {
+    display: none;
+  }
 `;
 
 const Gallow = styled.img`
+  display: visible;
   max-width: 50%;
   height: auto;
+
+  @media screen and (max-height: 400px) {
+    display: none;
+  }
 `;
 
 const Header = styled.h1`
   text-align: center;
+
+  @media screen and (max-height: 400px) {
+    display: none;
+  }
 `;
 
 const DirectInputField = styled.input`
@@ -65,12 +80,18 @@ const DirectInputField = styled.input`
   border: none;
 `;
 
+// Listens for resizing of the viewport triggers a repaint of the screen. (i.e. showing/hiding the mobile keyboard.)
+window.addEventListener("resize", () => {
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty("--vh", `${vh}px`);
+});
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      game_hint: "Press spacebar to start new game",
+      game_hint: "Click to start new game",
       showScores: false,
       showRegisterScore: false,
       player_name: ""
@@ -79,6 +100,7 @@ export default class App extends React.Component {
     // Add the eventListener to catch keyboard presses.
     document.addEventListener("keyup", this.checkInput);
 
+    // Append the port to base_url if this is running in development mode.
     if (process.env.NODE_ENV === "development") {
       this.base_url = "http://" + window.location.hostname + ":5000/";
     } else {
@@ -91,7 +113,6 @@ export default class App extends React.Component {
     document.getElementById("directInputField").focus();
   };
 
-  // Start a new game
   startGame = async () => {
     console.log("Starting new game");
 
@@ -110,7 +131,6 @@ export default class App extends React.Component {
       });
   };
 
-  // Load highscores
   loadHighscores = async () => {
     console.log("Loading highscores");
     await fetch(this.base_url + "highscores", { credentials: "include" })
@@ -158,10 +178,8 @@ export default class App extends React.Component {
       return;
     }
 
-    console.log("Char in checkInput:", char);
-
+    // Space and escape should start a new game
     if (char.match(/[ ]/gi) || char === "Escape") {
-      // Space and escape should start a new game
       this.startGame();
       return;
     }
@@ -171,8 +189,8 @@ export default class App extends React.Component {
       return;
     }
 
-    const isValidInput = char.match(/[a-z0-9]/gi);
-    if (isValidInput) {
+    // Allow only characters a-z and 0-9, and in that case, check if they are a match for the word we are looking for.
+    if (char.match(/[a-z0-9]/gi)) {
       this.setState({
         ...this.state,
         status: "PENDING",
@@ -185,12 +203,17 @@ export default class App extends React.Component {
         .then((response) => response.json())
         .then((json) => {
           this.setState(json);
-          if (json.status === "GAME_OVER" || json.status === "FINISHED") {
+          // TODO: This is not pretty.
+
+          if (json.status !== "ACTIVE") {
+            document.getElementById("directInputField").blur();
             this.setState({ showScores: true });
-          } else if (json.status === "HIGHSCORE") {
-            // Clear event listener so that the score can be inputted..
-            document.removeEventListener("keyup", this.checkInput);
-            this.setState({ showRegisterScore: true });
+
+            if (json.status === "HIGHSCORE") {
+              // Clear event listener so that the score can be inputted..
+              document.removeEventListener("keyup", this.checkInput);
+              this.setState({ showRegisterScore: true, showScores: false });
+            }
           }
         });
     } else {
@@ -244,22 +267,33 @@ export default class App extends React.Component {
       : 5;
 
     const GallowImage = () => {
-      if (this.state.guessed_chars.length === 1) {
-        return <Gallow src={Gallow1} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length === 2) {
-        return <Gallow src={Gallow2} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length === 3) {
-        return <Gallow src={Gallow3} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length === 4) {
-        return <Gallow src={Gallow4} alt="Gallow" />;
+      let gallow_image = Gallow;
+
+      switch (guesses_left) {
+        case 4:
+          gallow_image = Gallow1;
+          break;
+        case 3:
+          gallow_image = Gallow2;
+          break;
+        case 2:
+          gallow_image = Gallow3;
+          break;
+        case 1:
+          gallow_image = Gallow4;
+          break;
+        default:
+          gallow_image = Gallow0;
+          break;
       }
-      return null;
+
+      return <Gallow src={gallow_image} alt="Gallow" />;
     };
 
     return (
       <Screen>
+        <Header>Hangman</Header>
         <Game>
-          <Header>Hangman</Header>
           <GameHint onClick={this.startGame}>{this.state.game_hint}</GameHint>
           <DirectInputField
             id="directInputField"
@@ -275,8 +309,7 @@ export default class App extends React.Component {
               <GallowImage />
               <div>Guesses left: {guesses_left}</div>
               <div>
-                <p>Tried characters:</p>
-                <p>{this.state.guessed_chars}</p>
+                <p>Tried: {this.state.guessed_chars}</p>
               </div>
             </div>
           )}

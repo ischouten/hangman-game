@@ -62,7 +62,7 @@ class HangmanGame:
             self.calculate_score()
 
             self.status = "FINISHED"
-            self.game_hint = f"Congratulations! Your score: {self.score}.\nPress spacebar to play again."
+            self.game_hint = f"Congratulations! Your score: {self.score}.\nClick to play again."
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
