@@ -41,8 +41,3 @@ To push and create a build for development:
 - git push heroku-dev develop:master
 - Add postgres for heroku plugin,
 - Make sure the env var (especially `FLASK_APP` is set to `server.py`)
-
-
-## Notes
-
-- Devices without a physical keyboard are currently not supported.
