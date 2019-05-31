@@ -21,4 +21,8 @@ psycopg2 = "*"
 python_version = "3.7"
 
 [scripts]
-serve = "python webapp.py"
+serve = "python server.py"
+dbinit = "flask db init"
+dbmigrate = "flask db migrate"
+dbupgrade = "flask db upgrade"
+cli = "python cli.py"

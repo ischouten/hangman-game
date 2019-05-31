@@ -110,7 +110,6 @@ class HangmanGame:
 
         # If the character is not in the solution, then it costs an attempt.
         if not character.lower() in self.solution:
-
             self.guessed_chars = {char for char in self.guessed_chars}
             self.guessed_chars.add(character)
             self.game_hint = f"Nope... that's not right."

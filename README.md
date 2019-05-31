@@ -9,6 +9,7 @@ Guess a randomly picked word within 5 times, or be hung... Good luck! 😃
 ### Install dependencies for backend (python, flask application):
 
 - `pipenv install`
+- `pipenv dbupgrade` to apply migrations to your database.
 - `pipenv run serve` to run the server (on port 5000)
 
 ### Install dependencies for frontend (react-ui)
@@ -23,7 +24,7 @@ https://ischouten-hangman-dev.herokuapp.com
 
 ## Run from cli:
 
-`pipenv run python cli.py` (make sure to have run `pipenv install` first.)
+`pipenv run cli` (make sure to have run `pipenv install` first.)
 
 ## Deploy to heroku
 
@@ -38,6 +39,9 @@ https://ischouten-hangman-dev.herokuapp.com
 To push and create a build for development:
 
 - git push heroku-dev develop:master
+- Add postgres for heroku plugin,
+- Make sure the env var (especially `FLASK_APP` is set to `server.py`)
+
 
 ## Notes
 
