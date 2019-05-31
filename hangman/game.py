@@ -3,15 +3,14 @@ import re
 import logquicky
 import time
 import copy
-from hangman.datastore import DataStore
+from hangman import db
+from hangman.models import Highscore
 
 
 log = logquicky.load("hangman-log")
 
 word_pool = ["3dhubs", "marvin", "print", "filament", "order", "layer"]
 max_guesses = 5
-
-ds = DataStore.get_instance()
 
 
 class HangmanGame:
@@ -67,7 +66,9 @@ class HangmanGame:
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
 
-            highscores = ds.load_highscores()
+            # highscores = {}  # ds.load_highscores()
+            highscores = self.get_highscores()
+
             if len(highscores) < 5 or self.score > highscores[-1].get("score"):
                 # Allows the game to be saved.
                 self.status = "HIGHSCORE"
@@ -142,10 +143,22 @@ class HangmanGame:
         if not self.status == "HIGHSCORE":
             return False
 
-        ds.save_highscore(self.solution, self.score, player_name)
+        log.info("SAVING HIGHSCORE")
+        highscore = Highscore(player_name=player_name, score=self.score, solution=self.solution)
+        db.session.add(highscore)
+        db.session.commit()
+
         self.status = "NOT_STARTED"
         self.game_hint = "Highscore saved! Click or press space to play again."
         return True
+
+    def get_highscores(self) -> bool:
+
+        """ Return the top 5 highest scores. """
+
+        highscores = Highscore.query.order_by(Highscore.score.desc()).limit(5).all()
+
+        return [highscore.serialize() for highscore in highscores]
 
     def select_word(self) -> str:
 

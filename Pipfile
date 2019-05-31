@@ -6,12 +6,15 @@ verify_ssl = true
 [dev-packages]
 black = "==19.3b0"
 pytest = "*"
+flake8 = "*"
 
 [packages]
 logquicky = "*"
 flask = "*"
 flask-cors = "*"
 gunicorn = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
 
 [requires]
 python_version = "3.7"
