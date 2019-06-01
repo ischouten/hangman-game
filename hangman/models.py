@@ -11,4 +11,4 @@ class Highscore(db.Model):
         return f"<Highscore {self.player_name} - {self.score}>"
 
     def serialize(self):
-        return {"player_name": self.player_name, "solution": self.solution, "score": self.score}
+        return {"player_name": self.player_name, "score": self.score}
