@@ -269,10 +269,10 @@ export default class App extends React.Component {
                 autoFocus
                 defaultValue=""
                 onChange={this.checkDirectInput}
-                onClick={this.changeFocus}
+                clickHandler={this.changeFocus}
               />
               <PlayField
-                onClick={this.changeFocus}
+                clickHandler={this.changeFocus}
                 result={this.state.guess_result}
                 guessed={this.state.guessed_chars}
               />

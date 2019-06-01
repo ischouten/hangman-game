@@ -57,7 +57,7 @@ export default (props) => {
   const guesses_left = props.guessed ? 5 - props.guessed.length : 5;
 
   return (
-    <Playfield>
+    <Playfield onClick={props.clickHandler}>
       <h1>{props.result}</h1>
       <div>
         <GallowImage guesses_left={guesses_left} />
