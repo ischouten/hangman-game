@@ -20,7 +20,13 @@ Guess a randomly picked word within 5 times, or be hung... Good luck! 😃
 
 ## Check it out live on Heroku
 
-https://ischouten-hangman-dev.herokuapp.com
+Master branch:
+
+- https://ischouten-hangman.herokuapp.com
+
+Development version:
+
+- https://ischouten-hangman-dev.herokuapp.com
 
 ## Run from cli:
 
