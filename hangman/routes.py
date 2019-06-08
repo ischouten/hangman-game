@@ -1,26 +1,11 @@
 #!/usr/bin/env python3
-import os
 import logquicky
+from hangman import app
 from hangman.game import HangmanGame
-from hangman.datastore import DataStore
-from flask_cors import CORS
+from hangman.models import Highscore
+from flask import session, request, render_template, jsonify
 
-from flask import Flask, session, redirect, url_for, escape, request, render_template, jsonify, url_for
-
-ds = DataStore.get_instance()
-
-serve_dir = "react-ui/build"
-
-app = Flask(__name__, static_folder=f"{serve_dir}/static", template_folder=f"{serve_dir}")
-
-
-# Allow cors for now in development to let frontend talk from development dir
-CORS(app)
-
-log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
-
-# Set the secret key to some random bytes. Keep this really secret!
-app.secret_key = os.environ.get("SESSION_SECRET", "ShouldBeSecret")
+log = logquicky.load("hangman-log")
 
 
 @app.route("/", methods=["GET"])
@@ -62,6 +47,8 @@ def guess_character(character):
     character = str(character)
     game_state = session.get("game", {})
 
+    log.debug(f"Game before checking guess: {game_state}")
+
     game = HangmanGame(game_state)
     game.guess(character)
 
@@ -74,8 +61,11 @@ def guess_character(character):
 @app.route("/highscores", methods=["GET"])
 def highscores():
     """ Load top 5 high scores """
-    highscores = ds.load_highscores()
-    log.debug(highscores)
+
+    # Respond with the new list of highscores.
+    game = HangmanGame({})
+    highscores = game.get_highscores()
+
     return jsonify(highscores)
 
 
@@ -92,8 +82,13 @@ def post_highscore():
     game = HangmanGame(game_state)
     game.save_as_highscore(player_name)
 
+    # Game state was highscore, but will change now..
+    write_game_state_to_session(game)
+
     # Respond with the new list of highscores.
-    highscores = ds.load_highscores()
+    game = HangmanGame({})
+    highscores = game.get_highscores()
+
     return jsonify(highscores)
 
 
@@ -112,8 +107,3 @@ def game_status_safe(game) -> dict:
     del game_dict["solution"]
 
     return jsonify(game_dict)
-
-
-if __name__ == "__main__":
-
-    app.run(host="0.0.0.0", debug=True)

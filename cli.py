@@ -3,13 +3,12 @@ import os
 import logquicky
 from hangman.game import HangmanGame
 
-log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
+log = logquicky.load("hangman-log")
 
 game = HangmanGame({})
 game.start()
 
 while game.attempts_remaining() > 0 and game.status == "ACTIVE":
-    log.debug(game.status)
     character = input("Pick a character (a-z): ")
     game.guess(character)
 

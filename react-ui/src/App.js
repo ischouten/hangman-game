@@ -1,20 +1,26 @@
 import React from "react";
 import styled from "styled-components";
 import ScoreBoard from "./components/scoreboard";
-import Gallow1 from "./static/1.png";
-import Gallow2 from "./static/2.png";
-import Gallow3 from "./static/3.png";
-import Gallow4 from "./static/4.png";
+import PlayField from "./components/playfield";
+import GameOver from "./components/gameover";
+import RegisterHighscore from "./components/registerHighscore";
 
-const HangmanApp = styled.div`
-  display: absolute;
+const Screen = styled.div`
+  width: 100vw;
+  height: calc(var(--vh, 1vh) * 100);
+  min-height: -webkit-fill-available;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+`;
+
+const Game = styled.div`
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   align-content: center;
-  max-width: 600px;
-  width: 90vw;
-  height: 70vh;
-  transform: translateY(15%);
-  margin: auto;
-  border: solid 1px #cccccc;
 
   div {
     margin: auto;
@@ -29,36 +35,53 @@ const HangmanApp = styled.div`
   }
 `;
 
+const Header = styled.h1`
+  text-align: center;
+
+  @media screen and (max-height: 400px) {
+    display: none;
+  }
+`;
+
 const GameHint = styled.div`
-  position: absolute;
-  bottom: 5%;
   margin: auto;
   width: 100%;
+  cursor: pointer;
+  font-size: 1em;
 `;
 
 const Credits = styled.div`
-  position: absolute;
-  bottom: -5%;
-  margin: auto;
   width: 100%;
-  font-size: 0.5em;
-`;
-
-const Gallow = styled.img`
-  max-width: 50%;
-  height: auto;
-`;
-
-const Header = styled.h1`
   text-align: center;
+  font-size: 0.5em;
+  position: absolute;
+  margin: auto;
+  bottom: 5px;
+
+  @media screen and (max-height: 400px) {
+    display: none;
+  }
 `;
+
+const DirectInputField = styled.input`
+  color: transparent;
+  z-index: 1;
+  outline: none;
+  border: none;
+`;
+
+// Listens for resizing of the viewport triggers a repaint of the screen. (i.e. showing/hiding the mobile keyboard.)
+window.addEventListener("resize", () => {
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty("--vh", `${vh}px`);
+});
 
 export default class App extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      game_hint: "Press spacebar to start new game",
+      game_hint: "Click to start new game",
       showScores: false,
       showRegisterScore: false,
       player_name: ""
@@ -67,6 +90,7 @@ export default class App extends React.Component {
     // Add the eventListener to catch keyboard presses.
     document.addEventListener("keyup", this.checkInput);
 
+    // Append the port to base_url if this is running in development mode.
     if (process.env.NODE_ENV === "development") {
       this.base_url = "http://" + window.location.hostname + ":5000/";
     } else {
@@ -74,11 +98,26 @@ export default class App extends React.Component {
     }
   }
 
-  // Start a new game
+  changeFocus = () => {
+    // Reset focus to open the mobile keyboard.
+    try {
+      document.getElementById("directInputField").focus();
+    } catch (err) {
+      console.log("No direct input field");
+    }
+  };
+
   startGame = async () => {
     console.log("Starting new game");
+
+    // Set focus to the input field (necessary for mobile keyboards.)
+    this.changeFocus();
+
     this.setState({ showScores: false });
-    await fetch(this.base_url + "new", { method: "POST" })
+    await fetch(this.base_url + "new", {
+      method: "POST",
+      credentials: "include"
+    })
       .then((response) => response.json())
       .then((json) => {
         // Update state so that the UI updates.
@@ -86,10 +125,9 @@ export default class App extends React.Component {
       });
   };
 
-  // Load highscores
   loadHighscores = async () => {
     console.log("Loading highscores");
-    await fetch(this.base_url + "highscores")
+    await fetch(this.base_url + "highscores", { credentials: "include" })
       .then((response) => response.json())
       .then((json) => {
         this.setState({ highscores: json });
@@ -106,7 +144,8 @@ export default class App extends React.Component {
       },
       body: JSON.stringify({
         player_name: this.state.player_name
-      })
+      }),
+      credentials: "include"
     })
       .then((response) => response.json())
       .then((json) => {
@@ -117,18 +156,28 @@ export default class App extends React.Component {
           postHighscore: false,
           showRegisterScore: false
         });
-
+      })
+      .then(() => {
         // Re-enable the event listener for accepting space bar for new game.
         document.addEventListener("keyup", this.checkInput);
+
+        // Refresh status of the game.
+        this.loadStatus();
       });
   };
 
   // Make a guess by capturing keyboard input
   checkInput = async (e) => {
-    const char = e.key;
+    let char = e ? e.key : null;
 
+    if (char === "Unidentified") {
+      // Mobile keyboards send 'Unidentified' keyboard events.
+      // Ignore these and use the simulated event sent from the checkDirectInput method.
+      return;
+    }
+
+    // Space and escape should start a new game
     if (char.match(/[ ]/gi) || char === "Escape") {
-      // Space and escape should start a new game
       this.startGame();
       return;
     }
@@ -138,25 +187,30 @@ export default class App extends React.Component {
       return;
     }
 
-    const isValidInput = char.match(/[a-z0-9]/gi);
-    if (isValidInput) {
+    // Allow only characters a-z and 0-9, and in that case, check if they are a match for the word we are looking for.
+    if (char.match(/[a-zA-Z0-9]/gi)) {
       this.setState({
         ...this.state,
         status: "PENDING",
         game_hint: "Checking..."
       });
-      await fetch(this.base_url + "guess/" + char, {
-        method: "POST"
+      await fetch(this.base_url + "guess/" + char.toLowerCase(), {
+        method: "POST",
+        credentials: "include"
       })
         .then((response) => response.json())
         .then((json) => {
           this.setState(json);
-          if (json.status === "GAME_OVER" || json.status === "FINISHED") {
+          // TODO: This is not pretty.
+
+          if (json.status !== "ACTIVE") {
             this.setState({ showScores: true });
-          } else if (json.status === "HIGHSCORE") {
-            // Clear event listener so that the score can be inputted..
-            document.removeEventListener("keyup", this.checkInput);
-            this.setState({ showRegisterScore: true });
+
+            if (json.status === "HIGHSCORE") {
+              // Clear event listener so that the score can be inputted..
+              document.removeEventListener("keyup", this.checkInput);
+              this.setState({ showRegisterScore: true, showScores: false });
+            }
           }
         });
     } else {
@@ -171,7 +225,8 @@ export default class App extends React.Component {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json"
-      }
+      },
+      credentials: "include"
     })
       .then((response) => response.json())
       .then((json) => {
@@ -185,85 +240,68 @@ export default class App extends React.Component {
   };
 
   handlePlayerNameChange = (e) => {
-    if (e.key === "Enter") {
-      this.postHighscore();
-    }
-
     this.setState({ player_name: e.target.value });
   };
 
+  checkDirectInput = (e) => {
+    e.preventDefault();
+
+    console.log("Event from direct input", e.target.value);
+    const char = { key: e.target.value };
+
+    // Reset the formfield so that it is empty again.
+    e.target.value = "";
+    this.checkInput(char);
+  };
+
   render() {
-    const guesses_left = this.state.guessed_chars
-      ? 5 - this.state.guessed_chars.length
-      : 5;
-
-    const GallowImage = () => {
-      if (this.state.guessed_chars.length == 1) {
-        return <Gallow src={Gallow1} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length === 2) {
-        return <Gallow src={Gallow2} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length === 3) {
-        return <Gallow src={Gallow3} alt="Gallow" />;
-      } else if (this.state.guessed_chars.length === 4) {
-        return <Gallow src={Gallow4} alt="Gallow" />;
-      }
-      return null;
-    };
-
     return (
-      <HangmanApp>
+      <Screen>
         <Header>Hangman</Header>
-        {(this.state.status === "ACTIVE" ||
-          this.state.status === "PENDING") && (
-          <div>
-            <h1>{this.state.guess_result}</h1>
-            <GallowImage />
-            <div>Guesses left: {guesses_left}</div>
+        <Game>
+          <GameHint onClick={this.startGame}>{this.state.game_hint}</GameHint>
+          {(this.state.status === "ACTIVE" ||
+            this.state.status === "PENDING") && (
             <div>
-              <p>Tried characters:</p>
-              <p>{this.state.guessed_chars}</p>
+              <DirectInputField
+                id="directInputField"
+                type="text"
+                autoFocus
+                defaultValue=""
+                onChange={this.checkDirectInput}
+                clickHandler={this.changeFocus}
+              />
+              <PlayField
+                clickHandler={this.changeFocus}
+                result={this.state.guess_result}
+                guessed={this.state.guessed_chars}
+              />
             </div>
-          </div>
-        )}
+          )}
 
-        {this.state.status === "GAME_OVER" && (
-          <div>
-            <p>Game over</p>
-            <h1>:(</h1>
-          </div>
-        )}
+          {this.state.status === "GAME_OVER" && <GameOver />}
 
-        {this.state.showScores && (
-          <ScoreBoard highscores={this.state.highscores} />
-        )}
-
-        {this.state.showRegisterScore && (
-          <div>
-            <h2>New highscore!</h2>
-            <div>Score: {this.state.score}</div>
-            <input
-              id="playerName"
-              type="text"
-              value={this.state.player_name}
-              onChange={this.handlePlayerNameChange}
-              autoFocus
-              placeholder="Enter your name"
+          {this.state.showRegisterScore && (
+            <RegisterHighscore
+              score={this.state.score}
+              playerNameHandle={this.handlePlayerNameChange}
+              postHandler={this.postHighscore}
             />
-            <button onClick={this.postHighscore}>Send</button>
-          </div>
-        )}
+          )}
 
-        {this.state.status === "FINISHED" && (
-          <div>Game score: {this.state.score}</div>
-        )}
-        <GameHint onClick={this.startGame} autoFocus>
-          {this.state.game_hint}
-        </GameHint>
+          {this.state.showScores && (
+            <ScoreBoard highscores={this.state.highscores} />
+          )}
+
+          {this.state.status === "FINISHED" && (
+            <div>Game score: {this.state.score}</div>
+          )}
+        </Game>
         <Credits>
           By Igor Schouten - Check it out on{" "}
           <a href="https://github.com/ischouten/hangman-game">Github</a>
         </Credits>
-      </HangmanApp>
+      </Screen>
     );
   }
 }

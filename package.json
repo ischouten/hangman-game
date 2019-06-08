@@ -6,6 +6,6 @@
     "yarn": "1.13.0"
   },
   "scripts": {
-    "heroku-postbuild": "cd react-ui && yarn build"
+    "build": "cd react-ui && yarn install && yarn build"
   }
 }

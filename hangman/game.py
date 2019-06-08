@@ -3,15 +3,14 @@ import re
 import logquicky
 import time
 import copy
-from hangman.datastore import DataStore
+from hangman import db
+from hangman.models import Highscore
 
 
 log = logquicky.load("hangman-log")
 
 word_pool = ["3dhubs", "marvin", "print", "filament", "order", "layer"]
 max_guesses = 5
-
-ds = DataStore.get_instance()
 
 
 class HangmanGame:
@@ -20,6 +19,10 @@ class HangmanGame:
 
     def __init__(self, game_state):
         """ Instantiate a game """
+
+        log.debug("Started a new game")
+        if game_state is None:
+            game_state = {}
 
         # Game status info
         self.status: str = game_state.get("status", "UNSTARTED")
@@ -32,7 +35,7 @@ class HangmanGame:
         # Variables used for calculating highscore
         self.start_time = game_state.get("start_time", 0)
 
-        self.game_hint = game_state.get("game_hint", "Press spacebar to start game")
+        self.game_hint = game_state.get("game_hint", "Start new game")
 
     def as_dict(self):
         game = self.__dict__
@@ -58,12 +61,14 @@ class HangmanGame:
             self.calculate_score()
 
             self.status = "FINISHED"
-            self.game_hint = f"Congratulations! '{self.solution}' is correct.\nYour score: {self.score}.\n"
+            self.game_hint = f"Congratulations! You won.\nClick to play again."
 
             log.info(f"Yup! The word is: {self.solution}")
             log.info(f"Great! You won with {self.attempts_remaining()} attempts remaining. Score: {self.score}")
 
-            highscores = ds.load_highscores()
+            # highscores = {}  # ds.load_highscores()
+            highscores = self.get_highscores()
+
             if len(highscores) < 5 or self.score > highscores[-1].get("score"):
                 # Allows the game to be saved.
                 self.status = "HIGHSCORE"
@@ -105,7 +110,6 @@ class HangmanGame:
 
         # If the character is not in the solution, then it costs an attempt.
         if not character.lower() in self.solution:
-
             self.guessed_chars = {char for char in self.guessed_chars}
             self.guessed_chars.add(character)
             self.game_hint = f"Nope... that's not right."
@@ -138,9 +142,22 @@ class HangmanGame:
         if not self.status == "HIGHSCORE":
             return False
 
-        ds.save_highscore(self.solution, self.score, player_name)
-        self.game_hint = "Highscore saved!"
+        log.info("SAVING HIGHSCORE")
+        highscore = Highscore(player_name=player_name, score=self.score, solution=self.solution)
+        db.session.add(highscore)
+        db.session.commit()
+
+        self.status = "NOT_STARTED"
+        self.game_hint = "Highscore saved! Click or press space to play again."
         return True
+
+    def get_highscores(self) -> bool:
+
+        """ Return the top 5 highest scores. """
+
+        highscores = Highscore.query.order_by(Highscore.score.desc()).limit(5).all()
+
+        return [highscore.serialize() for highscore in highscores]
 
     def select_word(self) -> str:
 

@@ -6,15 +6,23 @@ verify_ssl = true
 [dev-packages]
 black = "==19.3b0"
 pytest = "*"
+flake8 = "*"
 
 [packages]
 logquicky = "*"
 flask = "*"
 flask-cors = "*"
 gunicorn = "*"
+flask-sqlalchemy = "*"
+flask-migrate = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.7"
 
 [scripts]
-serve = "python webapp.py"
+serve = "python server.py"
+dbinit = "flask db init"
+dbmigrate = "flask db migrate"
+dbupgrade = "flask db upgrade"
+cli = "python cli.py"
