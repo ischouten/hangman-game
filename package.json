@@ -2,8 +2,8 @@
   "name": "hangman-game",
   "version": "0.0.1",
   "engines": {
-    "node": "11.11.0",
-    "yarn": "1.13.0"
+    "node": "13.1.0",
+    "yarn": "1.19.2"
   },
   "scripts": {
     "build": "cd react-ui && yarn install && yarn build"
