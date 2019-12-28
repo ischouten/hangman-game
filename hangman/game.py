@@ -1,15 +1,18 @@
+import os
 import random
 import re
 import logquicky
 import time
 import copy
+import yaml
 from hangman import db
 from hangman.models import Highscore
 
-
 log = logquicky.load("hangman-log")
 
-word_pool = ["3dhubs", "marvin", "print", "filament", "order", "layer"]
+with open("res/dictionary.yaml") as file:
+    word_pool = yaml.load(file, Loader=yaml.FullLoader).get("words")
+
 max_guesses = 5
 
 

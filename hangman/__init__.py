@@ -8,7 +8,7 @@ from config import Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-log = logquicky.create("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
+log = logquicky.load("hangman-log", level=os.environ.get("LOG_LVL", "INFO"))
 serve_dir = "../react-ui/build"
 
 app = Flask(__name__, static_folder=f"{serve_dir}/static", template_folder=f"{serve_dir}")
